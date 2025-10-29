@@ -118,6 +118,17 @@ class Board:
     def get_pieces(self):
         return self.pieces
 
+    def eval(self):
+        # Simple evaluation function: sum of piece values
+        # King value is set abnormally high to prioritize its safety
+        total_value = 0
+        for piece in self.pieces:
+            if piece.color == COLOR.WHITE:
+                total_value += piece.value
+            else:
+                total_value -= piece.value
+        return total_value
+
 
 def initialize_game():
     board = Board()
@@ -157,7 +168,7 @@ if __name__ == "__main__":
     print(f"Color of BLACK: {COLOR.BLACK}")
     board = initialize_game()
     for piece in board.get_pieces():
-        if piece.piece_type == PIECE_TYPE.PAWN and piece.color == COLOR.BLACK:
-            print(
-                f"{piece.color.name} {piece.piece_type.name} at {piece.square.name} with value {piece.value}"
-            )
+        # if piece.piece_type == PIECE_TYPE.PAWN and piece.color == COLOR.BLACK:
+        print(
+            f"{piece.color.name} {piece.piece_type.name} at {piece.square.name} with value {piece.value}"
+        )
