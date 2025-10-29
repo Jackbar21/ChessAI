@@ -1,0 +1,30 @@
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Python-specific IDE / editor files
+*.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# MacOS / Windows specific
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
