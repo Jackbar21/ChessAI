@@ -2,6 +2,9 @@
 Search algorithm for finding the best chess move.
 
 Implements minimax with alpha-beta pruning and quiescence search.
+
+References:
+- [VIDEO] https://youtu.be/l-hh51ncgDI?si=HEflzJDShZmo8rN-
 - Alpha-beta pruning to optimize search: https://www.chessprogramming.org/Alpha-Beta
 - Quiescence search to avoid horizon effect: https://www.chessprogramming.org/Quiescence_Search
 
