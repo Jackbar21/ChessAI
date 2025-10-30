@@ -94,8 +94,7 @@ class SearchEngine:
 
         # Base case: reached depth limit
         if depth == 0:
-            # TODO: Add quiescence search to avoid horizon effect
-            return self.board.evaluate()
+            return self._quiescence_search(alpha, beta, is_maximizing)
 
         # Base case: check for game over
         legal_moves = self.move_generator.generate_legal_moves()
@@ -136,6 +135,71 @@ class SearchEngine:
                     break  # Alpha cutoff
 
             return min_eval
+
+    def _quiescence_search(
+        self, alpha: float, beta: float, is_maximizing: bool, max_depth: int = 4
+    ) -> float:
+        """
+        Quiescence search to avoid horizon effect.
+        Only searches capture moves to stabilize the position.
+
+        Args:
+            alpha: Alpha value for pruning
+            beta: Beta value for pruning
+            is_maximizing: True if maximizing player
+            max_depth: Maximum quiescence depth
+
+        Returns:
+            The evaluation score
+        """
+        cur_eval = self.board.evaluate()
+
+        if max_depth == 0:
+            return cur_eval
+
+        if is_maximizing:
+            if cur_eval >= beta:
+                return beta
+            alpha = max(alpha, cur_eval)
+
+            # Only consider captures
+            captures = [
+                move
+                for move in self.move_generator.generate_legal_moves()
+                if move.captured_piece_type is not None
+            ]
+
+            for move in captures:
+                self.board.make_move(move)
+                score = self._quiescence_search(alpha, beta, False, max_depth - 1)
+                self.board.unmake_move()
+
+                if score >= beta:
+                    return beta
+                alpha = max(alpha, score)
+
+            return alpha
+        else:
+            if cur_eval <= alpha:
+                return alpha
+            beta = min(beta, cur_eval)
+
+            captures = [
+                move
+                for move in self.move_generator.generate_legal_moves()
+                if move.captured_piece_type is not None
+            ]
+
+            for move in captures:
+                self.board.make_move(move)
+                score = self._quiescence_search(alpha, beta, True, max_depth - 1)
+                self.board.unmake_move()
+
+                if score <= alpha:
+                    return alpha
+                beta = min(beta, score)
+
+            return beta
 
     def get_stats(self) -> str:
         """Get search statistics."""
