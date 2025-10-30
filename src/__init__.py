@@ -13,6 +13,7 @@ from src.piece import Piece
 from src.board import Board
 from src.move import Move
 from src.movegen import MoveGenerator
+from src.search import SearchEngine
 
 __all__ = [
     "Color",
@@ -23,4 +24,5 @@ __all__ = [
     "Board",
     "Move",
     "MoveGenerator",
+    "SearchEngine",
 ]
