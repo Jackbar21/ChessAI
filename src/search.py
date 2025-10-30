@@ -1,7 +1,12 @@
 """
 Search algorithm for finding the best chess move.
 
-Implements minimax with alpha-beta pruning.
+Implements minimax with alpha-beta pruning and quiescence search.
+- Alpha-beta pruning to optimize search: https://www.chessprogramming.org/Alpha-Beta
+- Quiescence search to avoid horizon effect: https://www.chessprogramming.org/Quiescence_Search
+
+TODO:
+- Negamax is more elegant minimax implementation: https://www.chessprogramming.org/Negamax
 """
 
 from typing import Optional, Tuple
