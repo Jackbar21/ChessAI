@@ -2,9 +2,10 @@
 Board representation and game state management.
 """
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
 from src.constants import Color, PieceType
 from src.piece import Piece
+from src.move import Move
 
 
 class Board:
@@ -39,6 +40,9 @@ class Board:
         }
         self.halfmove_clock = 0  # For 50-move rule
         self.fullmove_number = 1
+
+        # Move history for unmake_move
+        self.move_history: List[Tuple[Move, Dict[str, Any]]] = []
 
     def get_piece(self, rank: int, file: int) -> Optional[Piece]:
         """
@@ -183,3 +187,305 @@ class Board:
         }
         self.halfmove_clock = 0
         self.fullmove_number = 1
+
+        # Move history for unmake_move
+        self.move_history: List[Tuple[Move, Dict[str, Any]]] = []
+
+    def opponent_color(self) -> Color:
+        """Get the opponent's color."""
+        return Color.BLACK if self.turn == Color.WHITE else Color.WHITE
+
+    def find_king(self, color: Color) -> Optional[Tuple[int, int]]:
+        """
+        Find the position of the king for the given color.
+
+        Args:
+            color: The color of the king to find
+
+        Returns:
+            (rank, file) tuple of king position, or None if not found
+        """
+        pieces = self.white_pieces if color == Color.WHITE else self.black_pieces
+        for rank, file, piece in pieces:
+            if piece.piece_type == PieceType.KING:
+                return (rank, file)
+        raise ValueError("King must be on the board")
+
+    def is_square_attacked(self, rank: int, file: int, by_color: Color) -> bool:
+        """
+        Check if a square is attacked by the given color.
+
+        Args:
+            rank: The rank of the square to check
+            file: The file of the square to check
+            by_color: The color attacking the square
+
+        Returns:
+            True if the square is attacked, False otherwise
+        """
+        # Check for pawn attacks
+        pawn_direction = -1 if by_color == Color.WHITE else 1
+        for df in [-1, 1]:
+            pawn_rank = rank - pawn_direction
+            pawn_file = file + df
+            if 0 <= pawn_rank < 8 and 0 <= pawn_file < 8:
+                piece = self.get_piece(pawn_rank, pawn_file)
+                if (
+                    piece
+                    and piece.color == by_color
+                    and piece.piece_type == PieceType.PAWN
+                ):
+                    return True
+
+        # Check for knight attacks
+        knight_offsets = [
+            (-2, -1),
+            (-2, 1),
+            (-1, -2),
+            (-1, 2),
+            (1, -2),
+            (1, 2),
+            (2, -1),
+            (2, 1),
+        ]
+        for dr, df in knight_offsets:
+            new_rank = rank + dr
+            new_file = file + df
+            if 0 <= new_rank < 8 and 0 <= new_file < 8:
+                piece = self.get_piece(new_rank, new_file)
+                if (
+                    piece
+                    and piece.color == by_color
+                    and piece.piece_type == PieceType.KNIGHT
+                ):
+                    return True
+
+        # Check for sliding piece attacks (bishop, rook, queen)
+        # Diagonal directions (bishop and queen)
+        diagonal_directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+        for dr, df in diagonal_directions:
+            new_rank = rank + dr
+            new_file = file + df
+            while 0 <= new_rank < 8 and 0 <= new_file < 8:
+                piece = self.get_piece(new_rank, new_file)
+                if piece:
+                    if piece.color == by_color and piece.piece_type in [
+                        PieceType.BISHOP,
+                        PieceType.QUEEN,
+                    ]:
+                        return True
+                    break  # Blocked by any piece
+                new_rank += dr
+                new_file += df
+
+        # Orthogonal directions (rook and queen)
+        orthogonal_directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        for dr, df in orthogonal_directions:
+            new_rank = rank + dr
+            new_file = file + df
+            while 0 <= new_rank < 8 and 0 <= new_file < 8:
+                piece = self.get_piece(new_rank, new_file)
+                if piece:
+                    if piece.color == by_color and piece.piece_type in [
+                        PieceType.ROOK,
+                        PieceType.QUEEN,
+                    ]:
+                        return True
+                    break
+                new_rank += dr
+                new_file += df
+
+        # Check for king attacks
+        for dr in [-1, 0, 1]:
+            for df in [-1, 0, 1]:
+                if dr == 0 and df == 0:
+                    continue
+                new_rank = rank + dr
+                new_file = file + df
+                if 0 <= new_rank < 8 and 0 <= new_file < 8:
+                    piece = self.get_piece(new_rank, new_file)
+                    if (
+                        piece
+                        and piece.color == by_color
+                        and piece.piece_type == PieceType.KING
+                    ):
+                        return True
+
+        return False
+
+    def is_in_check(self, color: Color) -> bool:
+        """
+        Check if the given color's king is in check.
+
+        Args:
+            color: The color to check
+
+        Returns:
+            True if the king is in check, False otherwise
+        """
+        king_rank, king_file = self.find_king(color)
+
+        # Check if attacked by the opposite color
+        attacker_color = Color.BLACK if color == Color.WHITE else Color.WHITE
+        return self.is_square_attacked(king_rank, king_file, attacker_color)
+
+    def make_move(self, move: Move) -> None:
+        """
+        Make a move on the board.
+
+        Args:
+            move: The move to make
+        """
+        # Save state for unmake_move
+        state = {
+            "en_passant_square": self.en_passant_square,
+            "castling_rights": {
+                Color.WHITE: self.castling_rights[Color.WHITE].copy(),
+                Color.BLACK: self.castling_rights[Color.BLACK].copy(),
+            },
+            "halfmove_clock": self.halfmove_clock,
+            "fullmove_number": self.fullmove_number,
+            "captured_piece": None,
+        }
+
+        moving_piece = self.get_piece(move.from_rank, move.from_file)
+        if moving_piece is None:
+            raise ValueError(f"No piece at {move.from_rank},{move.from_file}")
+
+        # Handle captures
+        if move.is_en_passant:
+            # Remove the captured pawn
+            capture_rank = move.to_rank - (
+                1 if moving_piece.color == Color.WHITE else -1
+            )
+            captured_piece = self.get_piece(capture_rank, move.to_file)
+            assert captured_piece.piece_type == PieceType.PAWN
+            state["captured_piece"] = (capture_rank, move.to_file, captured_piece)
+            self.set_piece(capture_rank, move.to_file, None)
+            self.halfmove_clock = 0
+        elif move.captured_piece_type:
+            captured_piece = self.get_piece(move.to_rank, move.to_file)
+            state["captured_piece"] = (move.to_rank, move.to_file, captured_piece)
+            self.halfmove_clock = 0
+        elif moving_piece.piece_type == PieceType.PAWN:
+            self.halfmove_clock = 0
+        else:
+            self.halfmove_clock += 1
+
+        # Move the piece
+        self.set_piece(move.from_rank, move.from_file, None)
+
+        # Handle promotion
+        if move.promotion_piece_type:
+            promoted_piece = Piece(move.promotion_piece_type, moving_piece.color)
+            self.set_piece(move.to_rank, move.to_file, promoted_piece)
+        else:
+            self.set_piece(move.to_rank, move.to_file, moving_piece)
+
+        # Handle castling
+        if move.is_castling:
+            # Move the rook
+            if move.to_file == 6:  # Kingside
+                rook = self.get_piece(move.from_rank, 7)
+                assert rook and rook.piece_type == PieceType.ROOK
+                assert self.get_piece(move.from_rank, 5) is None
+                self.set_piece(move.from_rank, 7, None)
+                self.set_piece(move.from_rank, 5, rook)
+            else:  # Queenside (to_file == 2)
+                rook = self.get_piece(move.from_rank, 0)
+                assert rook and rook.piece_type == PieceType.ROOK
+                assert self.get_piece(move.from_rank, 3) is None
+                self.set_piece(move.from_rank, 0, None)
+                self.set_piece(move.from_rank, 3, rook)
+
+        # Update en passant square
+        if (
+            moving_piece.piece_type == PieceType.PAWN
+            and abs(move.to_rank - move.from_rank) == 2
+        ):
+            # Double pawn push - set en passant square
+            self.en_passant_square = (
+                (move.from_rank + move.to_rank) // 2,
+                move.from_file,
+            )
+        else:
+            self.en_passant_square = None
+
+        # Update castling rights
+        if moving_piece.piece_type == PieceType.KING:
+            self.castling_rights[moving_piece.color]["kingside"] = False
+            self.castling_rights[moving_piece.color]["queenside"] = False
+        elif moving_piece.piece_type == PieceType.ROOK:
+            if move.from_file == 0:  # Queenside rook
+                self.castling_rights[moving_piece.color]["queenside"] = False
+            elif move.from_file == 7:  # Kingside rook
+                self.castling_rights[moving_piece.color]["kingside"] = False
+
+        # If a rook is captured, update opponent's castling rights
+        if move.captured_piece_type == PieceType.ROOK:
+            opponent = self.opponent_color()
+            if move.to_file == 0 and move.to_rank == (
+                0 if opponent == Color.WHITE else 7
+            ):
+                self.castling_rights[opponent]["queenside"] = False
+            elif move.to_file == 7 and move.to_rank == (
+                0 if opponent == Color.WHITE else 7
+            ):
+                self.castling_rights[opponent]["kingside"] = False
+
+        # Update turn
+        if self.turn == Color.BLACK:
+            self.fullmove_number += 1
+        self.turn = self.opponent_color()
+
+        # Save to history
+        self.move_history.append((move, state))
+
+    def unmake_move(self) -> None:
+        """Unmake the last move."""
+        if not self.move_history:
+            raise ValueError("No moves to unmake")
+
+        move, state = self.move_history.pop()
+
+        # Restore turn
+        self.turn = self.opponent_color()
+
+        # Get the piece that was moved (it's now at the destination)
+        moving_piece = self.get_piece(move.to_rank, move.to_file)
+        if moving_piece is None:
+            raise ValueError(f"No piece at destination {move.to_rank},{move.to_file}")
+
+        # Handle promotion - restore to pawn
+        if move.promotion_piece_type:
+            moving_piece = Piece(PieceType.PAWN, moving_piece.color)
+
+        # Move piece back
+        self.set_piece(move.to_rank, move.to_file, None)
+        self.set_piece(move.from_rank, move.from_file, moving_piece)
+
+        # Restore captured piece
+        if state["captured_piece"]:
+            cap_rank, cap_file, captured_piece = state["captured_piece"]
+            self.set_piece(cap_rank, cap_file, captured_piece)
+
+        # Undo castling rook move
+        if move.is_castling:
+            if move.to_file == 6:  # Kingside
+                rook = self.get_piece(move.from_rank, 5)
+                assert rook and rook.piece_type == PieceType.ROOK
+                assert self.get_piece(move.from_rank, 7) is None
+                self.set_piece(move.from_rank, 5, None)
+                self.set_piece(move.from_rank, 7, rook)
+            else:  # Queenside
+                rook = self.get_piece(move.from_rank, 3)
+                assert rook and rook.piece_type == PieceType.ROOK
+                assert self.get_piece(move.from_rank, 0) is None
+                self.set_piece(move.from_rank, 3, None)
+                self.set_piece(move.from_rank, 0, rook)
+
+        # Restore game state
+        self.en_passant_square = state["en_passant_square"]
+        self.castling_rights = state["castling_rights"]
+        self.halfmove_clock = state["halfmove_clock"]
+        self.fullmove_number = state["fullmove_number"]

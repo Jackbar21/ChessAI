@@ -12,6 +12,7 @@ from src.constants import Color, PieceType, PIECE_VALUES, PIECE_CHARS
 from src.piece import Piece
 from src.board import Board
 from src.move import Move
+from src.movegen import MoveGenerator
 
 __all__ = [
     "Color",
@@ -21,4 +22,5 @@ __all__ = [
     "Piece",
     "Board",
     "Move",
+    "MoveGenerator",
 ]

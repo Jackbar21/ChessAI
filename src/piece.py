@@ -36,3 +36,20 @@ class Piece:
         Uppercase for white, lowercase for black.
         """
         return self.char if self.color == Color.WHITE else self.char.lower()
+
+    def __hash__(self):
+        """
+        Make Piece hashable for use in sets.
+        Two pieces are considered the same if they have the same type and color.
+        Note: This does not consider position, this is handled by the Board.
+        """
+        return hash((self.piece_type, self.color))
+
+    def __eq__(self, other):
+        """
+        Check equality based on piece type and color.
+        Note: This does not consider position, this is handled by the Board.
+        """
+        if not isinstance(other, Piece):
+            return False
+        return self.piece_type == other.piece_type and self.color == other.color
