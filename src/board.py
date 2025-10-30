@@ -6,6 +6,7 @@ from typing import List, Optional, Tuple, Dict, Any
 from src.constants import Color, PieceType
 from src.piece import Piece
 from src.move import Move
+from src.game_state import GameState, CastlingRights
 
 
 class Board:
@@ -31,18 +32,57 @@ class Board:
         self.white_pieces: set[Tuple[int, int, Piece]] = set()  # (rank, file, piece)
         self.black_pieces: set[Tuple[int, int, Piece]] = set()  # (rank, file, piece)
 
-        # Game state
-        self.turn = Color.WHITE
-        self.en_passant_square: Optional[Tuple[int, int]] = None
-        self.castling_rights = {
-            Color.WHITE: {"kingside": True, "queenside": True},
-            Color.BLACK: {"kingside": True, "queenside": True},
-        }
-        self.halfmove_clock = 0  # For 50-move rule
-        self.fullmove_number = 1
-
-        # Move history for unmake_move
-        self.move_history: List[Tuple[Move, Dict[str, Any]]] = []
+        # Game state - using proper GameState dataclass
+        self.game_state = GameState()
+        
+        # Move history for unmake_move (move, game_state, captured_piece_info)
+        self.move_history: List[Tuple[Move, GameState, Optional[Tuple[int, int, Piece]]]] = []
+    
+    # Properties for backward compatibility and convenience
+    @property
+    def turn(self) -> Color:
+        """Get current turn."""
+        return self.game_state.turn
+    
+    @turn.setter
+    def turn(self, value: Color) -> None:
+        """Set current turn."""
+        self.game_state.turn = value
+    
+    @property
+    def en_passant_square(self) -> Optional[Tuple[int, int]]:
+        """Get en passant square."""
+        return self.game_state.en_passant_square
+    
+    @en_passant_square.setter
+    def en_passant_square(self, value: Optional[Tuple[int, int]]) -> None:
+        """Set en passant square."""
+        self.game_state.en_passant_square = value
+    
+    @property
+    def halfmove_clock(self) -> int:
+        """Get halfmove clock."""
+        return self.game_state.halfmove_clock
+    
+    @halfmove_clock.setter
+    def halfmove_clock(self, value: int) -> None:
+        """Set halfmove clock."""
+        self.game_state.halfmove_clock = value
+    
+    @property
+    def fullmove_number(self) -> int:
+        """Get fullmove number."""
+        return self.game_state.fullmove_number
+    
+    @fullmove_number.setter
+    def fullmove_number(self, value: int) -> None:
+        """Set fullmove number."""
+        self.game_state.fullmove_number = value
+    
+    @property
+    def castling_rights(self) -> CastlingRights:
+        """Get castling rights."""
+        return self.game_state.castling_rights
 
     def get_piece(self, rank: int, file: int) -> Optional[Piece]:
         """
@@ -178,18 +218,11 @@ class Board:
         for file in range(8):
             self.set_piece(6, file, Piece(PieceType.PAWN, Color.BLACK))
 
-        # Reset game state
-        self.turn = Color.WHITE
-        self.en_passant_square = None
-        self.castling_rights = {
-            Color.WHITE: {"kingside": True, "queenside": True},
-            Color.BLACK: {"kingside": True, "queenside": True},
-        }
-        self.halfmove_clock = 0
-        self.fullmove_number = 1
-
-        # Move history for unmake_move
-        self.move_history: List[Tuple[Move, Dict[str, Any]]] = []
+        # Reset game state to initial position
+        self.game_state = GameState()  # Creates fresh state with defaults
+        
+        # Clear move history
+        self.move_history = []
 
     def opponent_color(self) -> Color:
         """Get the opponent's color."""
@@ -336,17 +369,11 @@ class Board:
         Args:
             move: The move to make
         """
-        # Save state for unmake_move
-        state = {
-            "en_passant_square": self.en_passant_square,
-            "castling_rights": {
-                Color.WHITE: self.castling_rights[Color.WHITE].copy(),
-                Color.BLACK: self.castling_rights[Color.BLACK].copy(),
-            },
-            "halfmove_clock": self.halfmove_clock,
-            "fullmove_number": self.fullmove_number,
-            "captured_piece": None,
-        }
+        # Save complete game state for unmake_move  
+        saved_state = self.game_state.copy()
+        
+        # Track captured piece separately (board state, not game state)
+        captured_piece_info: Optional[Tuple[int, int, Piece]] = None
 
         moving_piece = self.get_piece(move.from_rank, move.from_file)
         if moving_piece is None:
@@ -360,12 +387,12 @@ class Board:
             )
             captured_piece = self.get_piece(capture_rank, move.to_file)
             assert captured_piece.piece_type == PieceType.PAWN
-            state["captured_piece"] = (capture_rank, move.to_file, captured_piece)
+            captured_piece_info = (capture_rank, move.to_file, captured_piece)
             self.set_piece(capture_rank, move.to_file, None)
             self.halfmove_clock = 0
         elif move.captured_piece_type:
             captured_piece = self.get_piece(move.to_rank, move.to_file)
-            state["captured_piece"] = (move.to_rank, move.to_file, captured_piece)
+            captured_piece_info = (move.to_rank, move.to_file, captured_piece)
             self.halfmove_clock = 0
         elif moving_piece.piece_type == PieceType.PAWN:
             self.halfmove_clock = 0
@@ -411,15 +438,14 @@ class Board:
         else:
             self.en_passant_square = None
 
-        # Update castling rights
+        # Update castling rights using new CastlingRights API
         if moving_piece.piece_type == PieceType.KING:
-            self.castling_rights[moving_piece.color]["kingside"] = False
-            self.castling_rights[moving_piece.color]["queenside"] = False
+            self.castling_rights.revoke_all(moving_piece.color)
         elif moving_piece.piece_type == PieceType.ROOK:
             if move.from_file == 0:  # Queenside rook
-                self.castling_rights[moving_piece.color]["queenside"] = False
+                self.castling_rights.set_queenside(moving_piece.color, False)
             elif move.from_file == 7:  # Kingside rook
-                self.castling_rights[moving_piece.color]["kingside"] = False
+                self.castling_rights.set_kingside(moving_piece.color, False)
 
         # If a rook is captured, update opponent's castling rights
         if move.captured_piece_type == PieceType.ROOK:
@@ -427,29 +453,30 @@ class Board:
             if move.to_file == 0 and move.to_rank == (
                 0 if opponent == Color.WHITE else 7
             ):
-                self.castling_rights[opponent]["queenside"] = False
+                self.castling_rights.set_queenside(opponent, False)
             elif move.to_file == 7 and move.to_rank == (
                 0 if opponent == Color.WHITE else 7
             ):
-                self.castling_rights[opponent]["kingside"] = False
+                self.castling_rights.set_kingside(opponent, False)
 
         # Update turn
         if self.turn == Color.BLACK:
             self.fullmove_number += 1
         self.turn = self.opponent_color()
 
-        # Save to history
-        self.move_history.append((move, state))
+        # Save to history with both saved_state and captured_piece_info
+        # We need to store captured piece info separately since it's board state
+        self.move_history.append((move, saved_state, captured_piece_info))
 
     def unmake_move(self) -> None:
         """Unmake the last move."""
         if not self.move_history:
             raise ValueError("No moves to unmake")
 
-        move, state = self.move_history.pop()
+        move, saved_state, captured_piece_info = self.move_history.pop()
 
-        # Restore turn
-        self.turn = self.opponent_color()
+        # Restore game state
+        self.game_state = saved_state
 
         # Get the piece that was moved (it's now at the destination)
         moving_piece = self.get_piece(move.to_rank, move.to_file)
@@ -465,8 +492,8 @@ class Board:
         self.set_piece(move.from_rank, move.from_file, moving_piece)
 
         # Restore captured piece
-        if state["captured_piece"]:
-            cap_rank, cap_file, captured_piece = state["captured_piece"]
+        if captured_piece_info:
+            cap_rank, cap_file, captured_piece = captured_piece_info
             self.set_piece(cap_rank, cap_file, captured_piece)
 
         # Undo castling rook move
@@ -483,9 +510,3 @@ class Board:
                 assert self.get_piece(move.from_rank, 0) is None
                 self.set_piece(move.from_rank, 3, None)
                 self.set_piece(move.from_rank, 0, rook)
-
-        # Restore game state
-        self.en_passant_square = state["en_passant_square"]
-        self.castling_rights = state["castling_rights"]
-        self.halfmove_clock = state["halfmove_clock"]
-        self.fullmove_number = state["fullmove_number"]

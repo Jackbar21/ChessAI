@@ -14,6 +14,7 @@ from src.board import Board
 from src.move import Move
 from src.movegen import MoveGenerator
 from src.search import SearchEngine
+from src.game_state import GameState, CastlingRights
 
 __all__ = [
     "Color",
@@ -25,4 +26,6 @@ __all__ = [
     "Move",
     "MoveGenerator",
     "SearchEngine",
+    "GameState",
+    "CastlingRights",
 ]
