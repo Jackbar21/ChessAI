@@ -45,7 +45,6 @@ class Move:
         self.is_en_passant = is_en_passant
         self.is_castling = is_castling
         self.promotion_piece_type = promotion_piece_type
-
     def __repr__(self):
         """String representation of the move."""
         from_sq = self._square_to_notation(self.from_rank, self.from_file)
