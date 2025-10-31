@@ -81,7 +81,7 @@ class MinimaxAgent:
         """
 
         # Base case: reached depth limit
-        if depth == 0:
+        if depth <= 0:
             return self._quiescence_search(alpha, beta, is_maximizing)
 
         # Base case: check for game over
@@ -142,7 +142,7 @@ class MinimaxAgent:
         """
         cur_eval = self.board.evaluate()
 
-        if max_depth == 0:
+        if max_depth <= 0:
             return cur_eval
 
         if is_maximizing:
