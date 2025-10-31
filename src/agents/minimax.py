@@ -1,49 +1,26 @@
-"""
-Search algorithm for finding the best chess move.
-
-Implements minimax with alpha-beta pruning and quiescence search.
-
-References:
-- [VIDEO] https://youtu.be/l-hh51ncgDI?si=HEflzJDShZmo8rN-
-- Alpha-beta pruning to optimize search: https://www.chessprogramming.org/Alpha-Beta
-- Quiescence search to avoid horizon effect: https://www.chessprogramming.org/Quiescence_Search
-
-TODO:
-- Negamax is more elegant minimax implementation: https://www.chessprogramming.org/Negamax
-"""
-
-from typing import Optional, Tuple
-from src.board import Board
-from src.move import Move
-from src.movegen import MoveGenerator
-from src.constants import Color
+from src.agents.base import *
 
 
-class SearchEngine:
-    """Chess search engine using minimax with alpha-beta pruning."""
+class MinimaxAgent(BaseAgent):
+    """
+    Chess agent using minimax with alpha-beta pruning and quiescence search.
 
-    def __init__(self, board: Board):
-        """
-        Initialize the search engine.
+    References:
+    - [VIDEO] https://youtu.be/l-hh51ncgDI?si=HEflzJDShZmo8rN-
+    - Alpha-beta pruning to optimize search: https://www.chessprogramming.org/Alpha-Beta
+    - Quiescence search to avoid horizon effect: https://www.chessprogramming.org/Quiescence_Search
+    """
 
-        Args:
-            board: The Board instance to search on
-        """
-        self.board = board
-        self.move_generator = MoveGenerator(board)
-        self.nodes_searched = 0
-
-    def find_best_move(self, depth: int = 4) -> Optional[Move]:
+    def find_best_move(self, depth: int) -> Optional[Move]:
         """
         Find the best move for the current position.
 
         Args:
-            depth: The search depth (default 4)
+            depth: The search depth
 
         Returns:
             The best move, or None if no legal moves (checkmate/stalemate)
         """
-        self.nodes_searched = 0
         best_move = None
         alpha = float("-inf")
         beta = float("inf")
@@ -98,10 +75,9 @@ class SearchEngine:
         Returns:
             The evaluation score for this position
         """
-        self.nodes_searched += 1
 
         # Base case: reached depth limit
-        if depth == 0:
+        if depth <= 0:
             return self._quiescence_search(alpha, beta, is_maximizing)
 
         # Base case: check for game over
@@ -162,7 +138,7 @@ class SearchEngine:
         """
         cur_eval = self.board.evaluate()
 
-        if max_depth == 0:
+        if max_depth <= 0:
             return cur_eval
 
         if is_maximizing:
@@ -208,7 +184,3 @@ class SearchEngine:
                 beta = min(beta, score)
 
             return beta
-
-    def get_stats(self) -> str:
-        """Get search statistics."""
-        return f"Nodes searched: {self.nodes_searched:,}"

@@ -13,7 +13,9 @@ from src.piece import Piece
 from src.board import Board
 from src.move import Move
 from src.movegen import MoveGenerator
-from src.search import SearchEngine
+from src.agents.base import BaseAgent
+from src.agents.random import RandomAgent
+from src.agents.minimax import MinimaxAgent
 
 __all__ = [
     "Color",
@@ -24,5 +26,7 @@ __all__ = [
     "Board",
     "Move",
     "MoveGenerator",
-    "SearchEngine",
+    "BaseAgent",
+    "RandomAgent",
+    "MinimaxAgent",
 ]

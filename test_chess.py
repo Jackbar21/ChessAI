@@ -4,7 +4,8 @@ Comprehensive test file for the Chess AI Engine.
 Tests move generation, move execution, and AI search.
 """
 
-from src import Board, MoveGenerator, SearchEngine, Color, PieceType, Move
+import pytest
+from src import Board, MoveGenerator, RandomAgent, Color, PieceType, Move
 from utils.utils import get_rank_file, get_move
 
 
@@ -88,3 +89,37 @@ def test_check_detection():
     legal_moves = movegen.generate_legal_moves()
     assert len(legal_moves) == 0, "Black should have no legal moves (checkmate)"
     assert board.is_in_check(Color.BLACK), "Black should be in check"
+
+
+@pytest.mark.skip(reason="50-move rule and threefold repetition not implemented yet")
+def test_random_agent_move():
+    """
+    Test RandomAgent's ability to select a legal move.
+    Continues making random moves until checkmate/stalemate.
+    """
+    board = Board()
+    board.setup_initial_position()
+    movegen = MoveGenerator(board)
+    agent = RandomAgent(board)
+
+    move_count = 0
+    while True:
+        legal_moves = movegen.generate_legal_moves()
+        if not legal_moves:
+            print("No legal moves available. Game over.")
+            break
+
+        move = agent.find_best_move(depth=1)
+        assert move in legal_moves, "RandomAgent selected an illegal move"
+
+        board.make_move(move)
+        move_count += 1
+        print(f"\nMove {move_count}: {move}\n")
+        print(board.display())
+
+    print(f"Game over after {move_count} moves.")
+    is_checkmate = board.is_in_check(board.turn)
+    if is_checkmate:
+        print("Checkmate!")
+    else:
+        print("Stalemate!")
