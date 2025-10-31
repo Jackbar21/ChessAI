@@ -1,7 +1,7 @@
 from src.agents.base import *
 
 
-class NeuralNetAgent:
+class NeuralNetAgent(BaseAgent):
     """
     TODO:
     Chess agent using neural networks for move evaluation.

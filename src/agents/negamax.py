@@ -1,7 +1,7 @@
 from src.agents.base import *
 
 
-class NegamaxAgent:
+class NegamaxAgent(BaseAgent):
     """
     Chess agent using negamax with alpha-beta pruning and quiescence search.
 

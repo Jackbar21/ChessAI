@@ -1,11 +1,7 @@
-from typing import Optional, Tuple
-from src.board import Board
-from src.move import Move
-from src.movegen import MoveGenerator
-from src.constants import Color
+from src.agents.base import *
 
 
-class MinimaxAgent:
+class MinimaxAgent(BaseAgent):
     """
     Chess agent using minimax with alpha-beta pruning and quiescence search.
 
