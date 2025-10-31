@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-from src.board import Board
-from src.move import Move
-from src.movegen import MoveGenerator
+from src import Board, Move, MoveGenerator
 
 
 class BaseAgent(ABC):
@@ -14,7 +12,6 @@ class BaseAgent(ABC):
     def __init__(self, board: Board):
         self.board = board
         self.move_generator = MoveGenerator(board)
-        self.nodes_searched = 0
 
     @abstractmethod
     def find_best_move(self, depth: int) -> Optional[Move]:
