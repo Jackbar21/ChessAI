@@ -130,26 +130,6 @@ class Board:
         # TODO: Change to FEN, for now used for local debugging
         return self.display()
 
-    def evaluate(self) -> int:
-        """
-        Simple material evaluation.
-        Positive score favors white, negative favors black.
-
-        Returns:
-            Evaluation score in centipawns
-        """
-        score = 0
-        for rank in range(8):
-            for file in range(8):
-                piece = self.board[rank][file]
-                if piece:
-                    value = piece.value
-                    if piece.color == Color.WHITE:
-                        score += value
-                    else:
-                        score -= value
-        return score
-
     def opponent_color(self) -> Color:
         """Get the opponent's color."""
         return Color.BLACK if self.turn == Color.WHITE else Color.WHITE
