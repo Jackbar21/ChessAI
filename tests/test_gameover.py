@@ -19,7 +19,7 @@ def test_not_over():
 
 
 def test_checkmate():
-    """Test a checkmate position (Scholars's Mate)."""
+    """Test a checkmate position (Scholar's Mate)."""
     board = Board()
     board.setup_initial_position()
     # Scholar's mate position: 1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7#
