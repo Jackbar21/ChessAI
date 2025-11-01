@@ -89,9 +89,6 @@ def test_check_detection():
     assert checks[-1], "Last move should put black in check"
 
     # Black has no legal moves, should be checkmate
-    movegen = MoveGenerator(board)
-    legal_moves = movegen.generate_legal_moves()
-    assert len(legal_moves) == 0, "Black should have no legal moves (checkmate)"
     assert board.is_in_check(Color.BLACK), "Black should be in check"
 
 
@@ -113,11 +110,12 @@ def test_checkmate():
         move = board.get_move_from_uci(move)
         board.make_move(move)
 
-    assert board.is_game_over()
-    assert board.is_in_check(Color.BLACK)
+    # Black has no legal moves, should be checkmate
     movegen = MoveGenerator(board)
     legal_moves = movegen.generate_legal_moves()
-    assert len(legal_moves) == 0  # No legal moves for black
+    assert len(legal_moves) == 0, "Black should have no legal moves (checkmate)"
+    assert board.is_in_check(Color.BLACK), "Black should be in check"
+    assert board.is_game_over(), "Game should be over (checkmate)"
 
 
 def test_stalemate():
