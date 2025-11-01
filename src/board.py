@@ -623,3 +623,52 @@ class Board:
         # Combine all parts
         fen = f"{fen_position} {fen_active_color} {castling} {ep_square} {fen_halfmove} {fen_fullmove}"
         return fen
+
+    def from_fen(self, fen: str) -> None:
+        """
+        Set up the board from a FEN string.
+
+        Args:
+            fen: The FEN string to set up the board
+        """
+        self.board = [[None for _ in range(8)] for _ in range(8)]
+        self.white_pieces = set()
+        self.black_pieces = set()
+
+        rows, color, castling, ep_square, halfmove, fullmove = fen.split()
+        self.turn = Color.WHITE if color == "w" else Color.BLACK
+        self.en_passant_square = (
+            self.notation_to_square(ep_square) if ep_square != "-" else None
+        )
+        self.castling_rights = {
+            Color.WHITE: {"kingside": "K" in castling, "queenside": "Q" in castling},
+            Color.BLACK: {"kingside": "k" in castling, "queenside": "q" in castling},
+        }
+        self.halfmove_clock = int(halfmove)
+        self.fullmove_number = int(fullmove)
+
+        # Unfortunately, fen_history and move_history cannot be reconstructed from FEN
+        self.fen_history = defaultdict(int)
+        self.move_history = []
+
+        rows = rows.split("/")
+        for rank in range(8):
+            file = 0
+            for char in rows[rank]:
+                if char.isdigit():
+                    file += int(char)
+                else:
+                    piece_color = Color.WHITE if char.isupper() else Color.BLACK
+                    piece_type = {
+                        "P": PieceType.PAWN,
+                        "N": PieceType.KNIGHT,
+                        "B": PieceType.BISHOP,
+                        "R": PieceType.ROOK,
+                        "Q": PieceType.QUEEN,
+                        "K": PieceType.KING,
+                    }[
+                        char.upper()
+                    ]  # TODO: Don't use a hardcoded map
+                    piece = Piece(piece_type, piece_color)
+                    self.set_piece(7 - rank, file, piece)
+                    file += 1
