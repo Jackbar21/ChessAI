@@ -256,3 +256,29 @@ def test_castling_not_available():
     ), "Black queenside castling should not be legal"
     board.make_move(random_choice(legal_moves))
     print(board)
+
+
+@pytest.mark.parametrize(
+    "fen,can_castle",
+    [
+        ("4k3/8/8/8/8/8/8/4K2R w K - 0 1", True),  # can castle
+        ("4k3/8/8/b7/8/8/8/4K2R w K - 0 1", False),  # cannot castle while in check
+        ("4k3/8/8/1b6/8/8/8/4K2R w K - 0 1", False),  # cannot castle over check
+        ("4k3/8/8/2b5/8/8/8/4K2R w K - 0 1", False),  # cannot castle into check
+        ("4k3/8/8/3b4/8/8/8/4K2R w K - 0 1", True),  # can castle
+    ],
+)
+def test_castling_rules(fen: str, can_castle: bool):
+    """Test cannot caste in check, over check, or into check."""
+    board = Board()
+    board.from_fen(fen)
+
+    white_kingside_castle = board.get_move_from_uci("e1g1")
+    movegen = MoveGenerator(board)
+    legal_moves = movegen.generate_legal_moves()
+
+    expected = can_castle
+    actual = white_kingside_castle in legal_moves
+    assert (
+        expected == actual
+    ), f"Expected can castle: {expected}, but got {actual} for position:\n{board}"
