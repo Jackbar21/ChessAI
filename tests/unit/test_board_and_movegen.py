@@ -67,25 +67,24 @@ def test_check_detection():
     board = Board()
     board.setup_initial_position()
 
-    # Create a position with check (Scholar's Mate setup)
-    moves = [
-        board.get_move_from_uci("e2e4"),  # e4
-        board.get_move_from_uci("e7e5"),  # e5
-        board.get_move_from_uci("d1h5"),  # Qh5
-        board.get_move_from_uci("b8c6"),  # Nc6
-        board.get_move_from_uci("f1c4"),  # Bc4
-        board.get_move_from_uci("g8f6"),  # Nf6
-        board.get_move_from_uci("h5f7"),  # Qxf7#
+    # Create a position with check
+    uci_moves = [
+        "b1c3",  # Nc3
+        "e7e5",  # e5
+        "c3d5",  # Nd5
+        "d8h4",  # Qh4
+        "d5c7",  # Nc7+
     ]
 
     checks = []
-    for i, move in enumerate(moves):
+    for i, move in enumerate(uci_moves):
+        move = board.get_move_from_uci(move)
         board.make_move(move)
         in_check = board.is_in_check(board.turn)
         checks.append(in_check)
 
     # Assert every move except the last does not put black in check
-    for i in range(len(moves) - 1):
+    for i in range(len(uci_moves) - 1):
         assert not checks[i], f"Move {i+1} should not put black in check"
     assert checks[-1], "Last move should put black in check"
 
@@ -101,20 +100,18 @@ def test_checkmate():
     board = Board()
     board.setup_initial_position()
     # Scholar's mate position: 1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7#
-    moves = [
-        board.get_move_from_uci("e2e4"),  # e4
-        board.get_move_from_uci("e7e5"),  # e5
-        board.get_move_from_uci("d1h5"),  # Qh5
-        board.get_move_from_uci("b8c6"),  # Nc6
-        board.get_move_from_uci("f1c4"),  # Bc4
-        board.get_move_from_uci("g8f6"),  # Nf6
-        board.get_move_from_uci("h5f7"),  # Qxf7#
+    uci_moves = [
+        "e2e4",  # e4
+        "e7e5",  # e5
+        "d1h5",  # Qh5
+        "b8c6",  # Nc6
+        "f1c4",  # Bc4
+        "g8f6",  # Nf6
+        "h5f7",  # Qxf7#
     ]
-    for move in moves:
+    for move in uci_moves:
+        move = board.get_move_from_uci(move)
         board.make_move(move)
-        print()
-        print(board)
-        print()
 
     assert board.is_game_over()
     assert board.is_in_check(Color.BLACK)
@@ -141,26 +138,26 @@ def test_threefold_repetition():
     # Initial board position technically counts as first occurrence
 
     # This sequence of 4 moves will return to the initial position
-    move1 = board.get_move_from_uci("g1f3")  # Nf3
-    move2 = board.get_move_from_uci("b8c6")  # Nc6
-    move3 = board.get_move_from_uci("f3g1")  # Ng1
-    move4 = board.get_move_from_uci("c6b8")  # Nb8
+    uci_move1 = "g1f3"  # Nf3
+    uci_move2 = "b8c6"  # Nc6
+    uci_move3 = "f3g1"  # Ng1
+    uci_move4 = "c6b8"  # Nb8
 
-    board.make_move(move1)
-    board.make_move(move2)
-    board.make_move(move3)
-    board.make_move(move4)
+    board.make_move(board.get_move_from_uci(uci_move1))
+    board.make_move(board.get_move_from_uci(uci_move2))
+    board.make_move(board.get_move_from_uci(uci_move3))
+    board.make_move(board.get_move_from_uci(uci_move4))
 
     # We have now repeated the initial position twice
     assert not board.is_game_over()
 
-    board.make_move(move1)
-    board.make_move(move2)
-    board.make_move(move3)
+    board.make_move(board.get_move_from_uci(uci_move1))
+    board.make_move(board.get_move_from_uci(uci_move2))
+    board.make_move(board.get_move_from_uci(uci_move3))
 
     # We still have not reached threefold repetition
     assert not board.is_game_over()
-    board.make_move(move4)
+    board.make_move(board.get_move_from_uci(uci_move4))
 
     # Now we should have reached threefold repetition
     assert board.is_game_over()
