@@ -48,17 +48,11 @@ class Move:
 
     def __repr__(self):
         """String representation of the move."""
-        from_sq = self._square_to_notation(self.from_rank, self.from_file)
-        to_sq = self._square_to_notation(self.to_rank, self.to_file)
-        result = f"{from_sq}{to_sq}"
+        return self.to_uci()
 
-        if self.promotion_piece_type:
-            assert (
-                self.promotion_piece_type.is_promotable
-            ), "Invalid promotion piece type"
-            result += self.promotion_piece_type.char.lower()
-
-        return result
+    def _square_to_notation(self, rank: int, file: int) -> str:
+        """Convert rank/file to algebraic notation (e.g., 0,0 -> 'a1')."""
+        return f"{'abcdefgh'[file]}{rank + 1}"
 
     def __str__(self):
         """Human-readable string representation."""
@@ -109,10 +103,50 @@ class Move:
             )
         )
 
+    def to_uci(self) -> str:
+        """Convert the move to UCI format (e.g., 'e2e4', 'e7e8q')."""
+        from_sq = self._square_to_notation(self.from_rank, self.from_file)
+        to_sq = self._square_to_notation(self.to_rank, self.to_file)
+        uci_move = f"{from_sq}{to_sq}"
+
+        if self.promotion_piece_type:
+            assert (
+                self.promotion_piece_type.is_promotable
+            ), "Invalid promotion piece type"
+            uci_move += self.promotion_piece_type.char.lower()
+
+        return uci_move
+
     @staticmethod
-    def _square_to_notation(rank: int, file: int) -> str:
-        """Convert rank/file to algebraic notation."""
-        assert (
-            0 <= rank <= 7 and 0 <= file <= 7
-        ), "Rank and file must be between 0 and 7"
-        return f"{'abcdefgh'[file]}{rank + 1}"
+    def from_uci(uci_str: str) -> Optional["Move"]:
+        """Create a Move object from a UCI format string."""
+        if not (4 <= len(uci_str) <= 5):
+            return None
+
+        try:
+            from_file = ord(uci_str[0]) - ord("a")
+            from_rank = int(uci_str[1]) - 1
+            to_file = ord(uci_str[2]) - ord("a")
+            to_rank = int(uci_str[3]) - 1
+
+            promotion_type = None
+            if len(uci_str) == 5:
+                promotion_char = uci_str[4].lower()
+                promotion_map = {
+                    "q": PieceType.QUEEN,
+                    "r": PieceType.ROOK,
+                    "b": PieceType.BISHOP,
+                    "n": PieceType.KNIGHT,
+                }
+                promotion_type = promotion_map[promotion_char]
+
+            return Move(
+                from_rank,
+                from_file,
+                to_rank,
+                to_file,
+                promotion_piece_type=promotion_type,
+            )
+
+        except (ValueError, IndexError):
+            return None
