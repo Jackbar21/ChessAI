@@ -16,9 +16,9 @@ class Game(threading.Thread):
         self.board = Board()
         self.board.from_fen(event["fen"])
 
-        # Default to hard difficulty
+        # Default to medium difficulty
         self.agent = MinimaxAgent(self.board)
-        self.depth = 4
+        self.depth = 2
 
         # Tell user they can change the bot agent at any time via chat
         for greeting in GREETINGS:
@@ -37,9 +37,6 @@ class Game(threading.Thread):
                 self.handle_state_change(event)
             elif event["type"] == "chatLine":
                 self.handle_chat_line(event)
-            elif event["type"] == "gameFinish":
-                print("Game finished")
-                return
 
     def handle_chat_line(self, event):
         username = event["username"]
