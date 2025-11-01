@@ -1,3 +1,7 @@
+"""
+As bug regression tests, ensure that previously identified bugs do not reoccur.
+"""
+
 import pytest
 from src import Board, MoveGenerator, RandomAgent, Color, PieceType, Move
 
