@@ -53,11 +53,8 @@ class Move:
         result = f"{from_sq}{to_sq}"
 
         if self.promotion_piece_type:
-            assert self.promotion_piece_type in (
-                PieceType.KNIGHT,
-                PieceType.BISHOP,
-                PieceType.ROOK,
-                PieceType.QUEEN,
+            assert (
+                self.promotion_piece_type.is_promotable
             ), "Invalid promotion piece type"
             result += self.promotion_piece_type.char.lower()
 
