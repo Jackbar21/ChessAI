@@ -1,5 +1,6 @@
 import pytest
 from src import Board, MoveGenerator, RandomAgent, Color, PieceType, Move
+from random import choice as random_choice
 
 
 def test_not_over():
@@ -184,3 +185,75 @@ def test_50_move_rule():
     board.make_move(move)
 
     assert board.is_game_over()
+
+
+def test_castling_available():
+    board = Board()
+    fen = "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1"  # All four castling rights available
+    board.from_fen(fen)
+
+    white_kingside_castle = Move.from_uci("e1g1")
+    white_queenside_castle = Move.from_uci("e1c1")
+    black_kingside_castle = Move.from_uci("e8g8")
+    black_queenside_castle = Move.from_uci("e8c8")
+    print(board)
+
+    # Assert white can castle both sides, then choose one
+    movegen = MoveGenerator(board)
+    legal_moves = movegen.generate_legal_moves()
+    print(f"Legal moves: {[move.to_uci() for move in legal_moves]}")
+    assert (
+        white_kingside_castle in legal_moves
+    ), "White kingside castling should be legal"
+    assert (
+        white_queenside_castle in legal_moves
+    ), "White queenside castling should be legal"
+    board.make_move(random_choice([white_kingside_castle, white_queenside_castle]))
+    print(board)
+
+    # Now black to move, assert black can castle both sides, then choose one
+    legal_moves = movegen.generate_legal_moves()
+    assert (
+        black_kingside_castle in legal_moves
+    ), "Black kingside castling should be legal"
+    assert (
+        black_queenside_castle in legal_moves
+    ), "Black queenside castling should be legal"
+    board.make_move(random_choice([black_kingside_castle, black_queenside_castle]))
+    print(board)
+
+
+def test_castling_not_available():
+    board = Board()
+    fen = "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1"  # All four castling rights not available
+    board.from_fen(fen)
+
+    white_kingside_castle = Move.from_uci("e1g1")
+    white_queenside_castle = Move.from_uci("e1c1")
+    black_kingside_castle = Move.from_uci("e8g8")
+    black_queenside_castle = Move.from_uci("e8c8")
+    print(board)
+
+    # Assert white cannot castle either side, then make a move
+    movegen = MoveGenerator(board)
+    legal_moves = movegen.generate_legal_moves()
+    print(f"Legal moves: {[move.to_uci() for move in legal_moves]}")
+    assert (
+        white_kingside_castle not in legal_moves
+    ), "White kingside castling should not be legal"
+    assert (
+        white_queenside_castle not in legal_moves
+    ), "White queenside castling should not be legal"
+    board.make_move(random_choice(legal_moves))
+    print(board)
+
+    # Now black to move, assert black cannot castle either sides, then make a move
+    legal_moves = movegen.generate_legal_moves()
+    assert (
+        black_kingside_castle not in legal_moves
+    ), "Black kingside castling should not be legal"
+    assert (
+        black_queenside_castle not in legal_moves
+    ), "Black queenside castling should not be legal"
+    board.make_move(random_choice(legal_moves))
+    print(board)
