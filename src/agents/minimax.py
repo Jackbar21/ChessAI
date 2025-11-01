@@ -1,7 +1,7 @@
 from typing import Callable
 from src.agents.base import *
 from src import Color
-from src.evaluate import material
+from src.evaluate import evaluate
 
 
 class MinimaxAgent(BaseAgent):
@@ -14,7 +14,7 @@ class MinimaxAgent(BaseAgent):
     - Quiescence search to avoid horizon effect: https://www.chessprogramming.org/Quiescence_Search
     """
 
-    def __init__(self, board: Board, eval_function: Callable[[Board], int] = material):
+    def __init__(self, board: Board, eval_function: Callable[[Board], int] = evaluate):
         super().__init__(board)
         self.eval_function = eval_function
 
