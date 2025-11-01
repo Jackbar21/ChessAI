@@ -457,13 +457,11 @@ class Board:
         if not self.move_history:
             raise ValueError("No moves to unmake")
 
+        # Decrement FEN history
         position_fen = self.position_fen()
         self.fen_history[position_fen] -= 1
         assert self.fen_history[position_fen] >= 0
         move, state = self.move_history.pop()
-
-        # Restore turn
-        self.turn = self.opponent_color()
 
         # Get the piece that was moved (it's now at the destination)
         moving_piece = self.get_piece(move.to_rank, move.to_file)
@@ -499,6 +497,7 @@ class Board:
                 self.set_piece(move.from_rank, 0, rook)
 
         # Restore game state
+        self.turn = self.opponent_color()
         self.en_passant_square = state["en_passant_square"]
         self.castling_rights = state["castling_rights"]
         self.halfmove_clock = state["halfmove_clock"]

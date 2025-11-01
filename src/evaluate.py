@@ -16,7 +16,7 @@ def material(board: Board) -> int:
     score = 0
     for rank in range(8):
         for file in range(8):
-            piece = board[rank][file]
+            piece = board.board[rank][file]
             if piece:
                 value = piece.centipawn_value
                 if piece.color == Color.WHITE:
@@ -31,4 +31,3 @@ def evaluate(board: Board) -> int:
     Default evaluation function that can be used by agents.
     """
     return material(board)
-    #
