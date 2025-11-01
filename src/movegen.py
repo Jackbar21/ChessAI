@@ -350,10 +350,11 @@ class MoveGenerator:
             True if the move is legal, False otherwise
         """
         # Make the move
+        moving_color = self.board.turn
         self.board.make_move(move)
 
         # Check if our king is in check after the move
-        is_legal = not self.board.is_in_check(self.board.opponent_color())
+        is_legal = not self.board.is_in_check(moving_color)
 
         # Unmake the move
         self.board.unmake_move()
