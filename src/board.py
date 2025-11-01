@@ -639,16 +639,9 @@ class Board:
                     file += int(char)
                 else:
                     piece_color = Color.WHITE if char.isupper() else Color.BLACK
-                    piece_type = {
-                        "P": PieceType.PAWN,
-                        "N": PieceType.KNIGHT,
-                        "B": PieceType.BISHOP,
-                        "R": PieceType.ROOK,
-                        "Q": PieceType.QUEEN,
-                        "K": PieceType.KING,
-                    }[
-                        char.upper()
-                    ]  # TODO: Don't use a hardcoded map
+                    # Build a reverse lookup from char to PieceType
+                    fen_char_to_piece_type = {pt.char.upper(): pt for pt in PieceType}
+                    piece_type = fen_char_to_piece_type[char.upper()]
                     piece = Piece(piece_type, piece_color)
                     self.set_piece(7 - rank, file, piece)
                     file += 1
