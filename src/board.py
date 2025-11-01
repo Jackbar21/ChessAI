@@ -6,7 +6,6 @@ from typing import List, Optional, Tuple, Dict, Any
 from src.constants import Color, PieceType
 from src.piece import Piece
 from src.move import Move
-from src.movegen import MoveGenerator
 from collections import defaultdict
 
 
@@ -378,6 +377,8 @@ class Board:
         Returns:
             True if the game is over, False otherwise
         """
+        from src.movegen import MoveGenerator
+
         move_gen = MoveGenerator(self)
 
         # No legal moves (checkmate or stalemate)
