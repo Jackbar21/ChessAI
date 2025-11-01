@@ -19,7 +19,7 @@ def main():
     board.setup_initial_position()
 
     print("Initial Position:")
-    print(board.display())
+    print(board)
     print()
 
     # Display some board information

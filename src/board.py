@@ -6,6 +6,7 @@ from typing import List, Optional, Tuple, Dict, Any
 from src.constants import Color, PieceType
 from src.piece import Piece
 from src.move import Move
+from collections import defaultdict
 
 
 class Board:
@@ -40,6 +41,7 @@ class Board:
         }
         self.halfmove_clock = 0  # For 50-move rule
         self.fullmove_number = 1
+        self.fen_history: Dict[str, int] = defaultdict(int)  # For threefold repetition
 
         # Move history for unmake_move
         self.move_history: List[Tuple[Move, Dict[str, Any]]] = []
@@ -123,6 +125,11 @@ class Board:
         lines.append("    a   b   c   d   e   f   g   h")
         return "\n".join(lines)
 
+    def __str__(self) -> str:
+        """String representation of the board."""
+        # TODO: Change to FEN, for now used for local debugging
+        return self.display()
+
     def evaluate(self) -> int:
         """
         Simple material evaluation.
@@ -142,54 +149,6 @@ class Board:
                     else:
                         score -= value
         return score
-
-    def setup_initial_position(self) -> None:
-        """Set up the standard chess starting position."""
-        # Clear the board
-        self.board = [[None for _ in range(8)] for _ in range(8)]
-        self.white_pieces = set()
-        self.black_pieces = set()
-
-        # White pieces (rank 0)
-        self.set_piece(0, 0, Piece(PieceType.ROOK, Color.WHITE))
-        self.set_piece(0, 1, Piece(PieceType.KNIGHT, Color.WHITE))
-        self.set_piece(0, 2, Piece(PieceType.BISHOP, Color.WHITE))
-        self.set_piece(0, 3, Piece(PieceType.QUEEN, Color.WHITE))
-        self.set_piece(0, 4, Piece(PieceType.KING, Color.WHITE))
-        self.set_piece(0, 5, Piece(PieceType.BISHOP, Color.WHITE))
-        self.set_piece(0, 6, Piece(PieceType.KNIGHT, Color.WHITE))
-        self.set_piece(0, 7, Piece(PieceType.ROOK, Color.WHITE))
-
-        # White pawns (rank 1)
-        for file in range(8):
-            self.set_piece(1, file, Piece(PieceType.PAWN, Color.WHITE))
-
-        # Black pieces (rank 7)
-        self.set_piece(7, 0, Piece(PieceType.ROOK, Color.BLACK))
-        self.set_piece(7, 1, Piece(PieceType.KNIGHT, Color.BLACK))
-        self.set_piece(7, 2, Piece(PieceType.BISHOP, Color.BLACK))
-        self.set_piece(7, 3, Piece(PieceType.QUEEN, Color.BLACK))
-        self.set_piece(7, 4, Piece(PieceType.KING, Color.BLACK))
-        self.set_piece(7, 5, Piece(PieceType.BISHOP, Color.BLACK))
-        self.set_piece(7, 6, Piece(PieceType.KNIGHT, Color.BLACK))
-        self.set_piece(7, 7, Piece(PieceType.ROOK, Color.BLACK))
-
-        # Black pawns (rank 6)
-        for file in range(8):
-            self.set_piece(6, file, Piece(PieceType.PAWN, Color.BLACK))
-
-        # Reset game state
-        self.turn = Color.WHITE
-        self.en_passant_square = None
-        self.castling_rights = {
-            Color.WHITE: {"kingside": True, "queenside": True},
-            Color.BLACK: {"kingside": True, "queenside": True},
-        }
-        self.halfmove_clock = 0
-        self.fullmove_number = 1
-
-        # Move history for unmake_move
-        self.move_history: List[Tuple[Move, Dict[str, Any]]] = []
 
     def opponent_color(self) -> Color:
         """Get the opponent's color."""
@@ -226,7 +185,7 @@ class Board:
         # Check for pawn attacks
         pawn_direction = -1 if by_color == Color.WHITE else 1
         for df in [-1, 1]:
-            pawn_rank = rank - pawn_direction
+            pawn_rank = rank + pawn_direction
             pawn_file = file + df
             if 0 <= pawn_rank < 8 and 0 <= pawn_file < 8:
                 piece = self.get_piece(pawn_rank, pawn_file)
@@ -328,6 +287,77 @@ class Board:
         # Check if attacked by the opposite color
         attacker_color = Color.BLACK if color == Color.WHITE else Color.WHITE
         return self.is_square_attacked(king_rank, king_file, attacker_color)
+
+    def is_insufficient_material(self) -> bool:
+        """
+        Check for insufficient material to continue the game.
+
+        Returns:
+            True if insufficient material, False otherwise
+        """
+        # All pieces except kings
+        pieces = [
+            (rank, file, piece)
+            for rank, file, piece in list(self.white_pieces) + list(self.black_pieces)
+            if piece.piece_type != PieceType.KING
+        ]
+
+        # King vs King
+        if len(pieces) == 0:
+            return True
+
+        # King vs King and Bishop/Knight
+        if len(pieces) == 1:
+            _, _, piece = pieces[0]
+            if piece.piece_type in [PieceType.BISHOP, PieceType.KNIGHT]:
+                return True
+
+        # King and Bishop vs King and Bishop (same color bishops)
+        if len(pieces) == 2:
+            rank1, file1, piece1 = pieces[0]
+            rank2, file2, piece2 = pieces[1]
+            if (
+                piece1.piece_type == PieceType.BISHOP
+                and piece2.piece_type == PieceType.BISHOP
+            ):
+                square_color1 = (rank1 + file1) % 2
+                square_color2 = (rank2 + file2) % 2
+                if square_color1 == square_color2:
+                    return True
+
+        return False
+
+    def is_game_over(self) -> bool:
+        """
+        Check if the game is over.
+
+        Returns:
+            True if the game is over, False otherwise
+        """
+        from src.movegen import MoveGenerator
+
+        move_gen = MoveGenerator(self)
+
+        # No legal moves (checkmate or stalemate)
+        legal_moves = move_gen.generate_legal_moves()
+        if not legal_moves:
+            return True
+
+        # 50-move rule
+        if self.halfmove_clock >= 100:
+            return True
+
+        # Threefold repetition
+        if self.fen_history[self.position_fen()] >= 3:
+            return True
+        else:
+            assert max(self.fen_history.values(), default=0) < 3  # Sanity check
+
+        # Insufficient material
+        if self.is_insufficient_material():
+            return True
+
+        return False
 
     def make_move(self, move: Move) -> None:
         """
@@ -440,12 +470,16 @@ class Board:
 
         # Save to history
         self.move_history.append((move, state))
+        self.fen_history[self.position_fen()] += 1
 
     def unmake_move(self) -> None:
         """Unmake the last move."""
         if not self.move_history:
             raise ValueError("No moves to unmake")
 
+        position_fen = self.position_fen()
+        self.fen_history[position_fen] -= 1
+        assert self.fen_history[position_fen] >= 0
         move, state = self.move_history.pop()
 
         # Restore turn
@@ -489,3 +523,130 @@ class Board:
         self.castling_rights = state["castling_rights"]
         self.halfmove_clock = state["halfmove_clock"]
         self.fullmove_number = state["fullmove_number"]
+
+    def to_fen(self) -> str:
+        """
+        Convert the current board position to FEN notation.
+
+        Returns:
+            FEN string representing the current position
+        """
+        fen_parts = []
+
+        # Piece placement
+        for rank in range(7, -1, -1):
+            empty_count = 0
+            rank_fen = ""
+            for file in range(8):
+                piece = self.get_piece(rank, file)
+                if piece is None:
+                    empty_count += 1
+                else:
+                    if empty_count > 0:
+                        rank_fen += str(empty_count)
+                        empty_count = 0
+                    rank_fen += str(piece)
+            if empty_count > 0:
+                rank_fen += str(empty_count)
+            fen_parts.append(rank_fen)
+        fen_position = "/".join(fen_parts)
+
+        # Active color
+        fen_active_color = "w" if self.turn == Color.WHITE else "b"
+
+        # Castling rights
+        castling = ""
+        if self.castling_rights[Color.WHITE]["kingside"]:
+            castling += "K"
+        if self.castling_rights[Color.WHITE]["queenside"]:
+            castling += "Q"
+        if self.castling_rights[Color.BLACK]["kingside"]:
+            castling += "k"
+        if self.castling_rights[Color.BLACK]["queenside"]:
+            castling += "q"
+        if castling == "":
+            castling = "-"
+
+        # En passant target square
+        if self.en_passant_square:
+            ep_square = self.square_to_notation(
+                self.en_passant_square[0], self.en_passant_square[1]
+            )
+        else:
+            ep_square = "-"
+
+        # Halfmove clock and fullmove number
+        fen_halfmove = str(self.halfmove_clock)
+        fen_fullmove = str(self.fullmove_number)
+
+        # Combine all parts
+        fen = f"{fen_position} {fen_active_color} {castling} {ep_square} {fen_halfmove} {fen_fullmove}"
+        return fen
+
+    def position_fen_from_fen(self, fen: str) -> str:
+        """
+        Get the position FEN from a full FEN string.
+
+        Args:
+            fen: The full FEN string
+        Returns:
+            Position FEN string
+        """
+        rows, color, castling, ep_square, _, _ = fen.split()
+        return " ".join([rows, color, castling, ep_square])  # ignore halfmove/fullmove
+
+    def position_fen(self) -> str:
+        """
+        FEN string suitable for repetition detection:
+        ignores halfmove clock and fullmove number.
+        """
+        full_fen = self.to_fen()
+        return self.position_fen_from_fen(full_fen)
+
+    def from_fen(self, fen: str) -> None:
+        """
+        Set up the board from a FEN string.
+
+        Args:
+            fen: The FEN string to set up the board
+        """
+        self.board = [[None for _ in range(8)] for _ in range(8)]
+        self.white_pieces = set()
+        self.black_pieces = set()
+
+        rows, color, castling, ep_square, halfmove, fullmove = fen.split()
+        self.turn = Color.WHITE if color == "w" else Color.BLACK
+        self.en_passant_square = (
+            self.notation_to_square(ep_square) if ep_square != "-" else None
+        )
+        self.castling_rights = {
+            Color.WHITE: {"kingside": "K" in castling, "queenside": "Q" in castling},
+            Color.BLACK: {"kingside": "k" in castling, "queenside": "q" in castling},
+        }
+        self.halfmove_clock = int(halfmove)
+        self.fullmove_number = int(fullmove)
+
+        # Unfortunately, fen_history and move_history cannot be reconstructed from FEN
+        self.fen_history = defaultdict(int)
+        self.fen_history[self.position_fen_from_fen(fen)] = 1  # Current position
+        self.move_history = []
+
+        rows = rows.split("/")
+        for rank in range(8):
+            file = 0
+            for char in rows[rank]:
+                if char.isdigit():
+                    file += int(char)
+                else:
+                    piece_color = Color.WHITE if char.isupper() else Color.BLACK
+                    # Build a reverse lookup from char to PieceType
+                    fen_char_to_piece_type = {pt.char.upper(): pt for pt in PieceType}
+                    piece_type = fen_char_to_piece_type[char.upper()]
+                    piece = Piece(piece_type, piece_color)
+                    self.set_piece(7 - rank, file, piece)
+                    file += 1
+
+    def setup_initial_position(self) -> None:
+        """Set up the standard chess starting position."""
+        initial_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        self.from_fen(initial_fen)

@@ -3,7 +3,7 @@ Move representation for the chess engine.
 """
 
 from typing import Optional
-from src.constants import PieceType, PIECE_CHARS
+from src.constants import PieceType
 
 
 class Move:
@@ -45,22 +45,14 @@ class Move:
         self.is_en_passant = is_en_passant
         self.is_castling = is_castling
         self.promotion_piece_type = promotion_piece_type
+
     def __repr__(self):
         """String representation of the move."""
-        from_sq = self._square_to_notation(self.from_rank, self.from_file)
-        to_sq = self._square_to_notation(self.to_rank, self.to_file)
-        result = f"{from_sq}{to_sq}"
+        return self.to_uci()
 
-        if self.promotion_piece_type:
-            assert self.promotion_piece_type in (
-                PieceType.KNIGHT,
-                PieceType.BISHOP,
-                PieceType.ROOK,
-                PieceType.QUEEN,
-            ), "Invalid promotion piece type"
-            result += PIECE_CHARS[self.promotion_piece_type].lower()
-
-        return result
+    def _square_to_notation(self, rank: int, file: int) -> str:
+        """Convert rank/file to algebraic notation (e.g., 0,0 -> 'a1')."""
+        return f"{'abcdefgh'[file]}{rank + 1}"
 
     def __str__(self):
         """Human-readable string representation."""
@@ -85,19 +77,20 @@ class Move:
         """Check if two moves are equal."""
         if not isinstance(other, Move):
             return False
+        # Only compare essential parts: from/to squares and promotion
+        # Metadata like captured_piece_type, is_en_passant, is_castling
+        # can be inferred from board state and shouldn't affect equality
         return (
             self.from_rank == other.from_rank
             and self.from_file == other.from_file
             and self.to_rank == other.to_rank
             and self.to_file == other.to_file
             and self.promotion_piece_type == other.promotion_piece_type
-            and self.is_en_passant == other.is_en_passant
-            and self.is_castling == other.is_castling
-            and self.captured_piece_type == other.captured_piece_type
         )
 
     def __hash__(self):
         """Make Move hashable for use in sets and dicts."""
+        # Must be consistent with __eq__: only hash essential parts
         return hash(
             (
                 self.from_rank,
@@ -105,16 +98,53 @@ class Move:
                 self.to_rank,
                 self.to_file,
                 self.promotion_piece_type,
-                self.is_en_passant,
-                self.is_castling,
-                self.captured_piece_type,
             )
         )
 
+    def to_uci(self) -> str:
+        """Convert the move to UCI format (e.g., 'e2e4', 'e7e8q')."""
+        from_sq = self._square_to_notation(self.from_rank, self.from_file)
+        to_sq = self._square_to_notation(self.to_rank, self.to_file)
+        uci_move = f"{from_sq}{to_sq}"
+
+        if self.promotion_piece_type:
+            assert (
+                self.promotion_piece_type.is_promotable
+            ), "Invalid promotion piece type"
+            uci_move += self.promotion_piece_type.char.lower()
+
+        return uci_move
+
     @staticmethod
-    def _square_to_notation(rank: int, file: int) -> str:
-        """Convert rank/file to algebraic notation."""
-        assert (
-            0 <= rank <= 7 and 0 <= file <= 7
-        ), "Rank and file must be between 0 and 7"
-        return f"{'abcdefgh'[file]}{rank + 1}"
+    def from_uci(uci_str: str) -> Optional["Move"]:
+        """Create a Move object from a UCI format string."""
+        if not (4 <= len(uci_str) <= 5):
+            return None
+
+        try:
+            from_file = ord(uci_str[0]) - ord("a")
+            from_rank = int(uci_str[1]) - 1
+            to_file = ord(uci_str[2]) - ord("a")
+            to_rank = int(uci_str[3]) - 1
+
+            promotion_type = None
+            if len(uci_str) == 5:
+                promotion_char = uci_str[4].lower()
+                promotion_map = {
+                    "q": PieceType.QUEEN,
+                    "r": PieceType.ROOK,
+                    "b": PieceType.BISHOP,
+                    "n": PieceType.KNIGHT,
+                }
+                promotion_type = promotion_map[promotion_char]
+
+            return Move(
+                from_rank,
+                from_file,
+                to_rank,
+                to_file,
+                promotion_piece_type=promotion_type,
+            )
+
+        except (ValueError, IndexError):
+            return None

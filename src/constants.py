@@ -2,7 +2,7 @@
 Constants and enumerations used throughout the chess engine.
 """
 
-from enum import Enum
+from enum import Enum, auto
 
 
 class Color(Enum):
@@ -15,28 +15,15 @@ class Color(Enum):
 class PieceType(Enum):
     """Represents the type of a chess piece."""
 
-    PAWN = 0
-    KNIGHT = 1
-    BISHOP = 2
-    ROOK = 3
-    QUEEN = 4
-    KING = 5
+    PAWN = (auto(), 1, "P", False)
+    KNIGHT = (auto(), 3, "N", True)
+    BISHOP = (auto(), 3, "B", True)
+    ROOK = (auto(), 5, "R", True)
+    QUEEN = (auto(), 9, "Q", True)
+    KING = (auto(), 200, "K", False)
 
-
-PIECE_VALUES = {
-    PieceType.PAWN: 1,
-    PieceType.KNIGHT: 3,
-    PieceType.BISHOP: 3,
-    PieceType.ROOK: 5,
-    PieceType.QUEEN: 9,
-    PieceType.KING: 200,  # Arbitrarily high value, not inf. for eval function
-}
-
-PIECE_CHARS = {
-    PieceType.PAWN: "P",
-    PieceType.KNIGHT: "N",
-    PieceType.BISHOP: "B",
-    PieceType.ROOK: "R",
-    PieceType.QUEEN: "Q",
-    PieceType.KING: "K",
-}
+    def __init__(self, id, score, char, is_promotable):
+        self.id = id
+        self.score = score  # can't use 'value', reserved by Enum
+        self.char = char
+        self.is_promotable = is_promotable
