@@ -524,7 +524,7 @@ class Board:
         Convert the current board position to FEN notation.
 
         Returns:
-            FEN string repre the current position
+            FEN string representing the current position
         """
         fen_parts = []
 
