@@ -2,11 +2,11 @@
 
 These are my initial notes and ideas for achieving each of my three goals:
 
-| Difficulty | Goal | Status |
-|-------------|------|--------|
-| Easy | Create an agent capable of playing randomized, legal moves | In Progress |
-| Medium | Create an agent capable of beating me in a full game of chess | Not Yet Achieved |
-| Hard | Create an agent capable of beating Stockfish with knight odds | Not Yet Achieved |
+| Difficulty | Goal                                                          | Status           |
+| ---------- | ------------------------------------------------------------- | ---------------- |
+| Easy       | Create an agent capable of playing randomized, legal moves    | Achieved         |
+| Medium     | Create an agent capable of beating me in a full game of chess | In Progress      |
+| Hard       | Create an agent capable of beating Stockfish with knight odds | Not Yet Achieved |
 
 ---
 
@@ -25,6 +25,11 @@ Once that’s achieved:
 
 - Save the **agent code** used for random play.
 - Record the **exact game** where the random-move agent played against me.
+
+#### GOAL STATUS
+
+Achieved! Played a full game against the random-move agent with the black pieces and won!
+[View Game](https://lichess.org/f4QNUI1d/black)
 
 ---
 
