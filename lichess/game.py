@@ -16,9 +16,9 @@ class Game(threading.Thread):
         self.board = Board()
         self.board.from_fen(event["fen"])
 
-        # Default to medium difficulty
+        # Default to hard difficulty
         self.agent = MinimaxAgent(self.board)
-        self.depth = 2
+        self.depth = 4
 
         # Tell user they can change the bot agent at any time via chat
         for greeting in GREETINGS:
