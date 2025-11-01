@@ -97,3 +97,17 @@ def test_insufficient_material():
     print(board.display())
 
     assert board.is_game_over()
+
+
+def test_50_move_rule():
+    """Test 50-move rule."""
+    board = Board()
+    fen = "6kr/7p/8/8/8/8/8/KR6 w - - 99 65"
+    board.from_fen(fen)
+
+    assert not board.is_game_over()
+
+    move = get_move("a1", "a2")
+    board.make_move(move)
+
+    assert board.is_game_over()
