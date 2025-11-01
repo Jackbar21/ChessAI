@@ -36,3 +36,24 @@ def test_random_agent_illegal_move_regression():
     illegal_move = board.get_move_from_uci("c3b4")
     legal_moves = movegen.generate_legal_moves()
     assert illegal_move not in legal_moves, f"Move {illegal_move} should be illegal"
+
+
+def test_minimax_agent_depth2_regression():
+    """
+    Regression test for a historical bug where MinimaxAgent at depth=2
+    crashed when I tried kingside castling against it (e1g1 move).
+    """
+
+    # Moves to reach the problematic position
+    moves = "d2d4 g7g6 c2c4 b7b6 b1c3 c8b7 e2e4 g8f6 g1f3 f6e4 c3e4 b7e4 c1f4 e4c6 f1d3 c6b7 d1e2 d8c8 e1g1 h7h6 f1e1"
+
+    board = Board()
+    board.setup_initial_position()
+    movegen = MoveGenerator(board)
+
+    # Replay all moves
+    for move_str in moves.split():
+        move = board.get_move_from_uci(move_str)
+        legal_moves = movegen.generate_legal_moves()
+        assert move in legal_moves, f"Move {move_str} should be legal"
+        board.make_move(move)
