@@ -60,18 +60,32 @@ def test_threefold_repetition():
     board = Board()
     board.setup_initial_position()
 
+    # Initial board position technically counts as first occurrence
+
+    # This sequence of 4 moves will return to the intial position
     move1 = get_move("g1", "f3")  # Nf3
     move2 = get_move("b8", "c6")  # Nc6
     move3 = get_move("f3", "g1")  # Ng1
     move4 = get_move("c6", "b8")  # Nb8
 
-    # Repeat moves 3 times
-    for _ in range(3):
-        board.make_move(move1)
-        board.make_move(move2)
-        board.make_move(move3)
-        board.make_move(move4)
+    board.make_move(move1)
+    board.make_move(move2)
+    board.make_move(move3)
+    board.make_move(move4)
 
+    # We have now repeated the initial position twice
+    assert not board.is_game_over()
+
+    board.make_move(move1)
+    board.make_move(move2)
+    board.make_move(move3)
+
+    # We still have not reached threefold repetition
+    assert not board.is_game_over()
+    assert False
+    board.make_move(move4)
+
+    # Now we should have reached threefold repetition
     assert board.is_game_over()
 
 

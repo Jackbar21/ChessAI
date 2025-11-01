@@ -578,14 +578,25 @@ class Board:
         fen = f"{fen_position} {fen_active_color} {castling} {ep_square} {fen_halfmove} {fen_fullmove}"
         return fen
 
+    def position_fen_from_fen(self, fen: str) -> str:
+        """
+        Get the position FEN from a full FEN string.
+
+        Args:
+            fen: The full FEN string
+        Returns:
+            Position FEN string
+        """
+        rows, color, castling, ep_square, _, _ = fen.split()
+        return " ".join([rows, color, castling, ep_square])  # ignore halfmove/fullmove
+
     def position_fen(self) -> str:
         """
         FEN string suitable for repetition detection:
         ignores halfmove clock and fullmove number.
         """
         full_fen = self.to_fen()
-        rows, color, castling, ep_square, _, _ = full_fen.split()
-        return " ".join([rows, color, castling, ep_square])  # ignore halfmove/fullmove
+        return self.position_fen_from_fen(full_fen)
 
     def from_fen(self, fen: str) -> None:
         """
@@ -612,6 +623,7 @@ class Board:
 
         # Unfortunately, fen_history and move_history cannot be reconstructed from FEN
         self.fen_history = defaultdict(int)
+        self.fen_history[self.position_fen_from_fen(fen)] = 1  # Current position
         self.move_history = []
 
         rows = rows.split("/")
