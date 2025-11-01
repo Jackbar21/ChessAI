@@ -180,7 +180,7 @@ class Board:
         # Check for pawn attacks
         pawn_direction = -1 if by_color == Color.WHITE else 1
         for df in [-1, 1]:
-            pawn_rank = rank - pawn_direction
+            pawn_rank = rank + pawn_direction
             pawn_file = file + df
             if 0 <= pawn_rank < 8 and 0 <= pawn_file < 8:
                 piece = self.get_piece(pawn_rank, pawn_file)

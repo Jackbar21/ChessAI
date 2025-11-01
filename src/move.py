@@ -77,19 +77,20 @@ class Move:
         """Check if two moves are equal."""
         if not isinstance(other, Move):
             return False
+        # Only compare essential parts: from/to squares and promotion
+        # Metadata like captured_piece_type, is_en_passant, is_castling
+        # can be inferred from board state and shouldn't affect equality
         return (
             self.from_rank == other.from_rank
             and self.from_file == other.from_file
             and self.to_rank == other.to_rank
             and self.to_file == other.to_file
             and self.promotion_piece_type == other.promotion_piece_type
-            and self.is_en_passant == other.is_en_passant
-            and self.is_castling == other.is_castling
-            and self.captured_piece_type == other.captured_piece_type
         )
 
     def __hash__(self):
         """Make Move hashable for use in sets and dicts."""
+        # Must be consistent with __eq__: only hash essential parts
         return hash(
             (
                 self.from_rank,
@@ -97,9 +98,6 @@ class Move:
                 self.to_rank,
                 self.to_file,
                 self.promotion_piece_type,
-                self.is_en_passant,
-                self.is_castling,
-                self.captured_piece_type,
             )
         )
 
