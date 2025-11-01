@@ -10,7 +10,7 @@ from src import *
 # Load variables from .env
 assert load_dotenv()
 
-TOKEN = os.getenv("LICHESS_BOT_TOKEN")
+TOKEN = os.getenv("LICHESS_API_TOKEN")
 if not TOKEN:
     raise ValueError("Missing LICHESS_BOT_TOKEN in .env file")
 
