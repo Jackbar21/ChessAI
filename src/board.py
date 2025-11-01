@@ -145,54 +145,6 @@ class Board:
                         score -= value
         return score
 
-    def setup_initial_position(self) -> None:
-        """Set up the standard chess starting position."""
-        # Clear the board
-        self.board = [[None for _ in range(8)] for _ in range(8)]
-        self.white_pieces = set()
-        self.black_pieces = set()
-
-        # White pieces (rank 0)
-        self.set_piece(0, 0, Piece(PieceType.ROOK, Color.WHITE))
-        self.set_piece(0, 1, Piece(PieceType.KNIGHT, Color.WHITE))
-        self.set_piece(0, 2, Piece(PieceType.BISHOP, Color.WHITE))
-        self.set_piece(0, 3, Piece(PieceType.QUEEN, Color.WHITE))
-        self.set_piece(0, 4, Piece(PieceType.KING, Color.WHITE))
-        self.set_piece(0, 5, Piece(PieceType.BISHOP, Color.WHITE))
-        self.set_piece(0, 6, Piece(PieceType.KNIGHT, Color.WHITE))
-        self.set_piece(0, 7, Piece(PieceType.ROOK, Color.WHITE))
-
-        # White pawns (rank 1)
-        for file in range(8):
-            self.set_piece(1, file, Piece(PieceType.PAWN, Color.WHITE))
-
-        # Black pieces (rank 7)
-        self.set_piece(7, 0, Piece(PieceType.ROOK, Color.BLACK))
-        self.set_piece(7, 1, Piece(PieceType.KNIGHT, Color.BLACK))
-        self.set_piece(7, 2, Piece(PieceType.BISHOP, Color.BLACK))
-        self.set_piece(7, 3, Piece(PieceType.QUEEN, Color.BLACK))
-        self.set_piece(7, 4, Piece(PieceType.KING, Color.BLACK))
-        self.set_piece(7, 5, Piece(PieceType.BISHOP, Color.BLACK))
-        self.set_piece(7, 6, Piece(PieceType.KNIGHT, Color.BLACK))
-        self.set_piece(7, 7, Piece(PieceType.ROOK, Color.BLACK))
-
-        # Black pawns (rank 6)
-        for file in range(8):
-            self.set_piece(6, file, Piece(PieceType.PAWN, Color.BLACK))
-
-        # Reset game state
-        self.turn = Color.WHITE
-        self.en_passant_square = None
-        self.castling_rights = {
-            Color.WHITE: {"kingside": True, "queenside": True},
-            Color.BLACK: {"kingside": True, "queenside": True},
-        }
-        self.halfmove_clock = 0
-        self.fullmove_number = 1
-
-        # Move history for unmake_move
-        self.move_history: List[Tuple[Move, Dict[str, Any]]] = []
-
     def opponent_color(self) -> Color:
         """Get the opponent's color."""
         return Color.BLACK if self.turn == Color.WHITE else Color.WHITE
@@ -391,8 +343,10 @@ class Board:
             return True
 
         # Threefold repetition
-        if self.fen_history[self.to_fen()] >= 3:
+        if self.fen_history[self.position_fen()] >= 3:
             return True
+        else:
+            assert max(self.fen_history.values(), default=0) < 3  # Sanity check
 
         # Insufficient material
         if self.is_insufficient_material():
@@ -511,16 +465,16 @@ class Board:
 
         # Save to history
         self.move_history.append((move, state))
-        self.fen_history[self.to_fen()] += 1
+        self.fen_history[self.position_fen()] += 1
 
     def unmake_move(self) -> None:
         """Unmake the last move."""
         if not self.move_history:
             raise ValueError("No moves to unmake")
 
-        fen_str = self.to_fen()
-        self.fen_history[fen_str] -= 1
-        assert self.fen_history[fen_str] >= 0
+        position_fen = self.position_fen()
+        self.fen_history[position_fen] -= 1
+        assert self.fen_history[position_fen] >= 0
         move, state = self.move_history.pop()
 
         # Restore turn
@@ -624,6 +578,15 @@ class Board:
         fen = f"{fen_position} {fen_active_color} {castling} {ep_square} {fen_halfmove} {fen_fullmove}"
         return fen
 
+    def position_fen(self) -> str:
+        """
+        FEN string suitable for repetition detection:
+        ignores halfmove clock and fullmove number.
+        """
+        full_fen = self.to_fen()
+        rows, color, castling, ep_square, _, _ = full_fen.split()
+        return " ".join([rows, color, castling, ep_square])  # ignore halfmove/fullmove
+
     def from_fen(self, fen: str) -> None:
         """
         Set up the board from a FEN string.
@@ -672,3 +635,8 @@ class Board:
                     piece = Piece(piece_type, piece_color)
                     self.set_piece(7 - rank, file, piece)
                     file += 1
+
+    def setup_initial_position(self) -> None:
+        """Set up the standard chess starting position."""
+        initial_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        self.from_fen(initial_fen)
