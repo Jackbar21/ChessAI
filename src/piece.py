@@ -2,7 +2,7 @@
 Piece representation for the chess engine.
 """
 
-from src.constants import Color, PieceType, PIECE_VALUES, PIECE_CHARS
+from src.constants import Color, PieceType
 
 
 class Piece:
@@ -23,8 +23,8 @@ class Piece:
         """
         self.piece_type = piece_type
         self.color = color
-        self.value = PIECE_VALUES[piece_type]
-        self.char = PIECE_CHARS[piece_type]
+        self.value = piece_type.score
+        self.char = piece_type.char
 
     def __repr__(self):
         """String representation of the piece."""

@@ -8,7 +8,7 @@ This package contains the core chess engine components:
 - move: Move representation
 """
 
-from src.constants import Color, PieceType, PIECE_VALUES, PIECE_CHARS
+from src.constants import Color, PieceType
 from src.piece import Piece
 from src.board import Board
 from src.move import Move
@@ -20,8 +20,6 @@ from src.agents.minimax import MinimaxAgent
 __all__ = [
     "Color",
     "PieceType",
-    "PIECE_VALUES",
-    "PIECE_CHARS",
     "Piece",
     "Board",
     "Move",

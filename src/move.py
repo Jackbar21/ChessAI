@@ -3,7 +3,7 @@ Move representation for the chess engine.
 """
 
 from typing import Optional
-from src.constants import PieceType, PIECE_CHARS
+from src.constants import PieceType
 
 
 class Move:
@@ -45,6 +45,7 @@ class Move:
         self.is_en_passant = is_en_passant
         self.is_castling = is_castling
         self.promotion_piece_type = promotion_piece_type
+
     def __repr__(self):
         """String representation of the move."""
         from_sq = self._square_to_notation(self.from_rank, self.from_file)
@@ -58,7 +59,7 @@ class Move:
                 PieceType.ROOK,
                 PieceType.QUEEN,
             ), "Invalid promotion piece type"
-            result += PIECE_CHARS[self.promotion_piece_type].lower()
+            result += self.promotion_piece_type.char.lower()
 
         return result
 
