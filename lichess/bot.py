@@ -6,7 +6,10 @@ from lichess.game import Game
 class LichessBot:
     def __init__(self):
         # Load variables from .env
-        assert load_dotenv()
+        if not load_dotenv():
+            raise RuntimeError(
+                "Failed to load .env file. Please ensure the file exists and is readable."
+            )
         token = os.getenv("LICHESS_API_TOKEN")
         if not token:
             raise ValueError("Missing LICHESS_BOT_TOKEN in .env file")
