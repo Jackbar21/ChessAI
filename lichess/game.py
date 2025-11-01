@@ -1,6 +1,6 @@
 import threading
 from src import Board, Move, RandomAgent, MinimaxAgent, NegamaxAgent
-from lichess.messages import generate_response, GREETING
+from lichess.messages import generate_response, GREETINGS
 
 
 class Game(threading.Thread):
@@ -15,14 +15,17 @@ class Game(threading.Thread):
 
         self.board = Board()
         self.board.from_fen(event["fen"])
-        self.agent = RandomAgent(self.board)
-        self.depth = 4  # Needed for agent
+
+        # Default to medium difficulty
+        self.agent = MinimaxAgent(self.board)
+        self.depth = 2
 
         # Tell user they can change the bot agent at any time via chat
-        self.client.bots.post_message(
-            self.game_id,
-            GREETING.replace("{{username}}", event["opponent"]["username"]),
-        )
+        for greeting in GREETINGS:
+            self.client.bots.post_message(
+                self.game_id,
+                greeting.replace("{{username}}", event["opponent"]["username"]),
+            )
 
         if event["isMyTurn"]:
             self.make_move()
@@ -46,22 +49,31 @@ class Game(threading.Thread):
         text = event["text"]
         response = generate_response(username, text)  # Default response
 
-        # Check message for agent change commands, and override response
-        text_lower = text.lower()
-        if "agent=random" in text_lower:
-            self.agent = RandomAgent(self.board)
-            response = f"Alright {username}, switching to Random Agent mode! Let's see if luck is on your side. 🍀"
-        elif "agent=minimax" in text_lower:
-            self.agent = MinimaxAgent(self.board)
-            response = f"You got it, {username}! Switching to Minimax Agent mode. Prepare to be outsmarted! 🤓"
-        elif "agent=negamax" in text_lower:
-            self.agent = NegamaxAgent(self.board)
-            response = f"Switching to Negamax Agent mode, {username}! Time to bring out the big guns! 💥"
-
-        # TODO: Check message for difficulty commands, and override response
-        # E.g. easy might be random agent, medium minimax with alpha-beta, hard negamax with alpha-beta & quiescence search, etc.
+        # Check message for difficulty commands, and override response
+        # TODO: Add more difficulty levels later, such as "magnus carlsen" mode
+        text_lower = text.lower().strip()
+        if text_lower == "easy":
+            self.set_easy_mode()
+            response = f"Alright {username}, letting you off easy! Switching to Random Agent mode. Don't get too comfy!"
+        elif text_lower == "medium":
+            self.set_medium_mode()
+            response = f"You got it, {username}! Switching to Minimax Agent mode. Time to step up your game!"
+        elif text_lower == "hard":
+            self.set_hard_mode()
+            response = f"Brace yourself, {username}! Switching to Hard Minimax Agent mode. This won't be easy!"
 
         self.client.bots.post_message(self.game_id, response)
+
+    def set_easy_mode(self):
+        self.agent = RandomAgent(self.board)
+
+    def set_medium_mode(self):
+        self.agent = MinimaxAgent(self.board)
+        self.depth = 2
+
+    def set_hard_mode(self):
+        self.agent = MinimaxAgent(self.board)
+        self.depth = 4
 
     def handle_state_change(self, game_state):
         time = (
