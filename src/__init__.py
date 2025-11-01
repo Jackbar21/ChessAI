@@ -16,7 +16,7 @@ from src.movegen import MoveGenerator
 from src.agents.base import BaseAgent
 from src.agents.random import RandomAgent
 from src.agents.minimax import MinimaxAgent
-from src.agents.negamax import NegamaxAgent
+from src.evaluate import evaluate
 
 __all__ = [
     "Color",
@@ -28,5 +28,5 @@ __all__ = [
     "BaseAgent",
     "RandomAgent",
     "MinimaxAgent",
-    "NegamaxAgent",
+    "evaluate",
 ]

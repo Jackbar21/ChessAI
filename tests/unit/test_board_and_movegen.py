@@ -1,5 +1,5 @@
 import pytest
-from src import Board, MoveGenerator, RandomAgent, Color, PieceType, Move
+from src import Board, MoveGenerator, Color, PieceType
 from random import choice as random_choice
 
 
