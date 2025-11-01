@@ -20,5 +20,5 @@ def test_agent_vs_self(MoveAgent: type[BaseAgent]):
         move_count += 1
 
     print(f"Game over after {move_count} moves.")
-    print(board.display())
+    print(board)
     assert board.is_game_over(), "The game should be over"
