@@ -125,6 +125,11 @@ class Board:
         lines.append("    a   b   c   d   e   f   g   h")
         return "\n".join(lines)
 
+    def __str__(self) -> str:
+        """String representation of the board."""
+        # TODO: Change to FEN, for now used for local debugging
+        return self.display()
+
     def evaluate(self) -> int:
         """
         Simple material evaluation.

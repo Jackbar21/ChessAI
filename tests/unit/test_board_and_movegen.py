@@ -44,7 +44,7 @@ def test_make_unmake_move():
     assert piece.color == Color.WHITE
     assert board.get_piece(e2_rank, e2_file) is None
     print("\nAfter making move e2-e4:\n")
-    print(board.display())
+    print(board)
 
     # After unmake, e2 should have the pawn again and e4 should be empty
     board.unmake_move()
@@ -54,7 +54,7 @@ def test_make_unmake_move():
     assert piece.color == Color.WHITE
     assert board.get_piece(e4_rank, e4_file) is None
     print("\nAfter unmaking move e2-e4:\n")
-    print(board.display())
+    print(board)
 
 
 def test_check_detection():
@@ -108,7 +108,7 @@ def test_checkmate():
     for move in moves:
         board.make_move(move)
         print()
-        print(board.display())
+        print(board)
         print()
 
     assert board.is_game_over()
@@ -124,7 +124,7 @@ def test_stalemate():
     fen = "7k/5K2/6Q1/8/8/8/8/8 b - - 0 1"
     board = Board()
     board.from_fen(fen)
-    print(board.display())
+    print(board)
     assert board.is_game_over()
 
 
@@ -167,7 +167,7 @@ def test_insufficient_material():
 
     fen = "7k/8/8/8/8/8/8/K7 w - - 0 1"
     board.from_fen(fen)
-    print(board.display())
+    print(board)
 
     assert board.is_game_over()
 

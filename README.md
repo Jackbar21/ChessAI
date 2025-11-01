@@ -77,7 +77,7 @@ best_move = search.find_best_move(depth=4)
 # Make the move
 if best_move:
     board.make_move(best_move)
-    print(board.display())
+    print(board)
 ```
 
 ### Running the Demo
