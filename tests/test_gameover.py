@@ -82,7 +82,6 @@ def test_threefold_repetition():
 
     # We still have not reached threefold repetition
     assert not board.is_game_over()
-    assert False
     board.make_move(move4)
 
     # Now we should have reached threefold repetition
