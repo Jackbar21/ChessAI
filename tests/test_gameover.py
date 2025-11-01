@@ -62,7 +62,7 @@ def test_threefold_repetition():
 
     # Initial board position technically counts as first occurrence
 
-    # This sequence of 4 moves will return to the intial position
+    # This sequence of 4 moves will return to the initial position
     move1 = get_move("g1", "f3")  # Nf3
     move2 = get_move("b8", "c6")  # Nc6
     move3 = get_move("f3", "g1")  # Ng1
