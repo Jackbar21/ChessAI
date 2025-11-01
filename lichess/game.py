@@ -1,6 +1,6 @@
 import threading
-from src import Board, Move, RandomAgent
-from lichess.responses import generate_response
+from src import Board, Move, RandomAgent, MinimaxAgent, NegamaxAgent
+from lichess.messages import generate_response, GREETING
 
 
 class Game(threading.Thread):
@@ -17,6 +17,12 @@ class Game(threading.Thread):
         self.board.from_fen(event["fen"])
         self.agent = RandomAgent(self.board)
         self.depth = 4  # Needed for agent
+
+        # Tell user they can change the bot agent at any time via chat
+        self.client.bots.post_message(
+            self.game_id,
+            GREETING.replace("{{username}}", event["opponent"]["username"]),
+        )
 
         if event["isMyTurn"]:
             self.make_move()
@@ -38,7 +44,23 @@ class Game(threading.Thread):
             return  # Ignore own messages
 
         text = event["text"]
-        response = generate_response(username, text)
+        response = generate_response(username, text)  # Default response
+
+        # Check message for agent change commands, and override response
+        text_lower = text.lower()
+        if "agent=random" in text_lower:
+            self.agent = RandomAgent(self.board)
+            response = f"Alright {username}, switching to Random Agent mode! Let's see if luck is on your side. 🍀"
+        elif "agent=minimax" in text_lower:
+            self.agent = MinimaxAgent(self.board)
+            response = f"You got it, {username}! Switching to Minimax Agent mode. Prepare to be outsmarted! 🤓"
+        elif "agent=negamax" in text_lower:
+            self.agent = NegamaxAgent(self.board)
+            response = f"Switching to Negamax Agent mode, {username}! Time to bring out the big guns! 💥"
+
+        # TODO: Check message for difficulty commands, and override response
+        # E.g. easy might be random agent, medium minimax with alpha-beta, hard negamax with alpha-beta & quiescence search, etc.
+
         self.client.bots.post_message(self.game_id, response)
 
     def handle_state_change(self, game_state):
