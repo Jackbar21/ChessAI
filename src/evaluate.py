@@ -16,7 +16,7 @@ def material(board: Board) -> int:
     score = 0
     for rank in range(8):
         for file in range(8):
-            piece = board.board[rank][file]
+            piece = board.get_piece(rank, file)
             if piece:
                 value = piece.centipawn_value
                 if piece.color == Color.WHITE:
