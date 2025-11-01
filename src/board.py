@@ -130,26 +130,6 @@ class Board:
         # TODO: Change to FEN, for now used for local debugging
         return self.display()
 
-    def evaluate(self) -> int:
-        """
-        Simple material evaluation.
-        Positive score favors white, negative favors black.
-
-        Returns:
-            Evaluation score in centipawns
-        """
-        score = 0
-        for rank in range(8):
-            for file in range(8):
-                piece = self.board[rank][file]
-                if piece:
-                    value = piece.value
-                    if piece.color == Color.WHITE:
-                        score += value
-                    else:
-                        score -= value
-        return score
-
     def opponent_color(self) -> Color:
         """Get the opponent's color."""
         return Color.BLACK if self.turn == Color.WHITE else Color.WHITE
@@ -477,13 +457,11 @@ class Board:
         if not self.move_history:
             raise ValueError("No moves to unmake")
 
+        # Decrement FEN history
         position_fen = self.position_fen()
         self.fen_history[position_fen] -= 1
         assert self.fen_history[position_fen] >= 0
         move, state = self.move_history.pop()
-
-        # Restore turn
-        self.turn = self.opponent_color()
 
         # Get the piece that was moved (it's now at the destination)
         moving_piece = self.get_piece(move.to_rank, move.to_file)
@@ -519,6 +497,7 @@ class Board:
                 self.set_piece(move.from_rank, 0, rook)
 
         # Restore game state
+        self.turn = self.opponent_color()
         self.en_passant_square = state["en_passant_square"]
         self.castling_rights = state["castling_rights"]
         self.halfmove_clock = state["halfmove_clock"]
@@ -650,3 +629,53 @@ class Board:
         """Set up the standard chess starting position."""
         initial_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         self.from_fen(initial_fen)
+
+    def get_move_from_uci(self, uci: str) -> Move:
+        """
+        Convert a UCI string to a Move object.
+
+        Args:
+            uci: The UCI string (e.g., 'e2e4', 'e7e8q')
+
+        Returns:
+            The corresponding Move object
+        """
+        from_file = "abcdefgh".index(uci[0])
+        from_rank = int(uci[1]) - 1
+        to_file = "abcdefgh".index(uci[2])
+        to_rank = int(uci[3]) - 1
+
+        promotion_piece_type = None
+        if len(uci) == 5:
+            promotion_char = uci[4].upper()
+            fen_char_to_piece_type = {pt.char.upper(): pt for pt in PieceType}
+            promotion_piece_type = fen_char_to_piece_type[promotion_char]
+
+        moving_piece = self.get_piece(from_rank, from_file)
+        if moving_piece is None:
+            raise ValueError(f"No piece at {from_rank},{from_file}")
+
+        captured_piece_type = None
+        is_en_passant = (
+            moving_piece.piece_type == PieceType.PAWN
+            and (to_rank, to_file) == self.en_passant_square
+        )
+        if is_en_passant:
+            captured_piece_type = PieceType.PAWN
+        elif self.get_piece(to_rank, to_file):
+            captured_piece_type = self.get_piece(to_rank, to_file).piece_type
+
+        is_castling = (
+            moving_piece.piece_type == PieceType.KING and abs(to_rank - from_rank) == 0 and abs(to_file - from_file) == 2
+        )
+
+        return Move(
+            from_rank=from_rank,
+            from_file=from_file,
+            to_rank=to_rank,
+            to_file=to_file,
+            captured_piece_type=captured_piece_type,
+            is_en_passant=is_en_passant,
+            is_castling=is_castling,
+            promotion_piece_type=promotion_piece_type,
+        )

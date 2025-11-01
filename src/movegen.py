@@ -311,9 +311,10 @@ class MoveGenerator:
         """Generate castling moves for the king."""
         moves = []
         color = piece.color
+        opponent_color = Color.BLACK if color == Color.WHITE else Color.WHITE
 
         # Can't castle if king is in check
-        if self.board.is_square_attacked(rank, file, color):
+        if self.board.is_square_attacked(rank, file, opponent_color):
             return moves
 
         # Check kingside castling
@@ -321,8 +322,8 @@ class MoveGenerator:
             self.board.castling_rights[color]["kingside"]
             and self.board.get_piece(rank, 5) is None
             and self.board.get_piece(rank, 6) is None
-            and not self.board.is_square_attacked(rank, 5, color)
-            and not self.board.is_square_attacked(rank, 6, color)
+            and not self.board.is_square_attacked(rank, 5, opponent_color)
+            and not self.board.is_square_attacked(rank, 6, opponent_color)
         ):
             moves.append(Move(rank, file, rank, 6, is_castling=True))
 
@@ -332,8 +333,8 @@ class MoveGenerator:
             and self.board.get_piece(rank, 1) is None
             and self.board.get_piece(rank, 2) is None
             and self.board.get_piece(rank, 3) is None
-            and not self.board.is_square_attacked(rank, 3, color)
-            and not self.board.is_square_attacked(rank, 2, color)
+            and not self.board.is_square_attacked(rank, 3, opponent_color)
+            and not self.board.is_square_attacked(rank, 2, opponent_color)
         ):
             moves.append(Move(rank, file, rank, 2, is_castling=True))
 

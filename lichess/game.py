@@ -1,6 +1,6 @@
 import threading
-from src import Board, Move, RandomAgent
-from lichess.responses import generate_response
+from src import Board, Move, RandomAgent, MinimaxAgent
+from lichess.messages import generate_response, GREETINGS
 
 
 class Game(threading.Thread):
@@ -15,8 +15,17 @@ class Game(threading.Thread):
 
         self.board = Board()
         self.board.from_fen(event["fen"])
-        self.agent = RandomAgent(self.board)
-        self.depth = 4  # Needed for agent
+
+        # Default to medium difficulty
+        self.agent = MinimaxAgent(self.board)
+        self.depth = 2
+
+        # Tell user they can change the bot agent at any time via chat
+        for greeting in GREETINGS:
+            self.client.bots.post_message(
+                self.game_id,
+                greeting.replace("{{username}}", event["opponent"]["username"]),
+            )
 
         if event["isMyTurn"]:
             self.make_move()
@@ -28,9 +37,6 @@ class Game(threading.Thread):
                 self.handle_state_change(event)
             elif event["type"] == "chatLine":
                 self.handle_chat_line(event)
-            elif event["type"] == "gameFinish":
-                print("Game finished")
-                return
 
     def handle_chat_line(self, event):
         username = event["username"]
@@ -38,8 +44,33 @@ class Game(threading.Thread):
             return  # Ignore own messages
 
         text = event["text"]
-        response = generate_response(username, text)
+        response = generate_response(username, text)  # Default response
+
+        # Check message for difficulty commands, and override response
+        # TODO: Add more difficulty levels later, such as "magnus carlsen" mode
+        text_lower = text.lower().strip()
+        if text_lower == "easy":
+            self.set_easy_mode()
+            response = f"Alright {username}, letting you off easy! Switching to Random Agent mode. Don't get too comfy!"
+        elif text_lower == "medium":
+            self.set_medium_mode()
+            response = f"You got it, {username}! Switching to Minimax Agent mode. Time to step up your game!"
+        elif text_lower == "hard":
+            self.set_hard_mode()
+            response = f"Brace yourself, {username}! Switching to Hard Minimax Agent mode. This won't be easy!"
+
         self.client.bots.post_message(self.game_id, response)
+
+    def set_easy_mode(self):
+        self.agent = RandomAgent(self.board)
+
+    def set_medium_mode(self):
+        self.agent = MinimaxAgent(self.board)
+        self.depth = 2
+
+    def set_hard_mode(self):
+        self.agent = MinimaxAgent(self.board)
+        self.depth = 4
 
     def handle_state_change(self, game_state):
         time = (
@@ -62,7 +93,7 @@ class Game(threading.Thread):
         # Capture opponent's last move
         uci_move = uci_moves[-1]
         assert uci_move is not None, "No moves in game state"
-        move = Move.from_uci(uci_move)
+        move = self.board.get_move_from_uci(uci_move)
         self.board.make_move(move)
 
         # Now agent's turn

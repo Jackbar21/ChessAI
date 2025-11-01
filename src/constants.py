@@ -15,15 +15,15 @@ class Color(Enum):
 class PieceType(Enum):
     """Represents the type of a chess piece."""
 
-    PAWN = (auto(), 1, "P", False)
-    KNIGHT = (auto(), 3, "N", True)
-    BISHOP = (auto(), 3, "B", True)
-    ROOK = (auto(), 5, "R", True)
-    QUEEN = (auto(), 9, "Q", True)
-    KING = (auto(), 200, "K", False)
+    PAWN = (auto(), 100, "P", False)
+    KNIGHT = (auto(), 320, "N", True)
+    BISHOP = (auto(), 330, "B", True)
+    ROOK = (auto(), 500, "R", True)
+    QUEEN = (auto(), 900, "Q", True)
+    KING = (auto(), 20_000, "K", False)
 
-    def __init__(self, id, score, char, is_promotable):
+    def __init__(self, id, centipawn_value, char, is_promotable):
         self.id = id
-        self.score = score  # can't use 'value', reserved by Enum
+        self.centipawn_value = centipawn_value  # can't use 'value', reserved by Enum
         self.char = char
         self.is_promotable = is_promotable
