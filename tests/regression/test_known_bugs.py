@@ -2,7 +2,7 @@
 Regression tests to ensure that previously identified bugs do not reoccur.
 """
 
-from src import Board, MoveGenerator, Move
+from src import Board, MoveGenerator
 
 
 def test_random_agent_illegal_move_regression():
@@ -27,12 +27,12 @@ def test_random_agent_illegal_move_regression():
 
     # Replay all moves up to the problematic position
     for move_str in moves.split():
-        move = Move.from_uci(move_str)
+        move = board.get_move_from_uci(move_str)
         legal_moves = movegen.generate_legal_moves()
         assert move in legal_moves, f"Move {move_str} should be legal"
         board.make_move(move)
 
     # Now check that c3b4 is *not* legal
-    illegal_move = Move.from_uci("c3b4")
+    illegal_move = board.get_move_from_uci("c3b4")
     legal_moves = movegen.generate_legal_moves()
     assert illegal_move not in legal_moves, f"Move {illegal_move} should be illegal"
