@@ -41,7 +41,9 @@ def test_random_agent_illegal_move_regression():
 def test_minimax_agent_depth2_regression():
     """
     Regression test for a historical bug where MinimaxAgent at depth=2
-    crashed when I tried kingside castling against it (e1g1 move).
+    crashed due to castling bug. Program thought rook was still on h1
+    after white castled kingside. So when trying to move f1 rook to e1,
+    the program crashed.
     """
 
     # Moves to reach the problematic position

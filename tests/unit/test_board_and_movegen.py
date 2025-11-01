@@ -188,7 +188,7 @@ def test_50_move_rule():
 
 def test_castling_available():
     board = Board()
-    fen = "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1"  # All four castling rights available
+    fen = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"  # All four castling rights available
     board.from_fen(fen)
 
     white_kingside_castle = board.get_move_from_uci("e1g1")

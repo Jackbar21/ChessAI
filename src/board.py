@@ -666,16 +666,16 @@ class Board:
             captured_piece_type = self.get_piece(to_rank, to_file).piece_type
 
         is_castling = (
-            moving_piece.piece_type == PieceType.KING and abs(to_file - from_file) == 2
+            moving_piece.piece_type == PieceType.KING and abs(to_rank - from_rank) == 0 and abs(to_file - from_file) == 2
         )
 
         return Move(
-            from_rank,
-            from_file,
-            to_rank,
-            to_file,
-            captured_piece_type,
-            is_en_passant,
-            is_castling,
-            promotion_piece_type,
+            from_rank=from_rank,
+            from_file=from_file,
+            to_rank=to_rank,
+            to_file=to_file,
+            captured_piece_type=captured_piece_type,
+            is_en_passant=is_en_passant,
+            is_castling=is_castling,
+            promotion_piece_type=promotion_piece_type,
         )
