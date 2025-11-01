@@ -21,9 +21,10 @@ class Piece:
             piece_type: The type of piece (PAWN, KNIGHT, etc.)
             color: The color of the piece (WHITE or BLACK)
         """
-        self.piece_type = piece_type
         self.color = color
-        self.value = piece_type.score
+        self.piece_type = piece_type
+        self.id = piece_type.id
+        self.centipawn_value = piece_type.centipawn_value
         self.char = piece_type.char
 
     def __repr__(self):
