@@ -1,6 +1,5 @@
 import pytest
 from src import Board, MoveGenerator, RandomAgent, Color, PieceType, Move
-from utils.utils import get_rank_file, get_move
 
 
 def test_illegal_move():

@@ -6,7 +6,6 @@ Tests move generation, move execution, and AI search.
 
 import pytest
 from src import Board, MoveGenerator, RandomAgent, Color, PieceType, Move
-from utils.utils import get_rank_file, get_move
 
 
 def test_move_generation():
@@ -19,11 +18,11 @@ def test_move_generation():
     print(f"Legal moves from starting position: {len(legal_moves)}")
     assert len(legal_moves) == 20, "Expected 20 legal moves in starting position"
 
-    assert get_move("e2", "e4") in legal_moves, "Move e2-e4 should be legal"
-    assert get_move("e2", "e5") not in legal_moves, "Move e2-e5 should not be legal"
+    assert Move.from_uci("e2e4") in legal_moves, "Move e2-e4 should be legal"
+    assert Move.from_uci("e2e5") not in legal_moves, "Move e2-e5 should not be legal"
 
-    assert get_move("b1", "c3") in legal_moves, "Move Nb1-c3 should be legal"
-    assert get_move("b1", "d2") not in legal_moves, "Move Nb1-d2 should not be legal"
+    assert Move.from_uci("b1c3") in legal_moves, "Move Nb1-c3 should be legal"
+    assert Move.from_uci("b1d2") not in legal_moves, "Move Nb1-d2 should not be legal"
 
 
 def test_make_unmake_move():
@@ -31,11 +30,11 @@ def test_make_unmake_move():
     board = Board()
     board.setup_initial_position()
 
-    move = get_move("e2", "e4")
+    move = Move.from_uci("e2e4")
     board.make_move(move)
 
-    e2_rank, e2_file = get_rank_file("e2")
-    e4_rank, e4_file = get_rank_file("e4")
+    e2_rank, e2_file = board.notation_to_square("e2")
+    e4_rank, e4_file = board.notation_to_square("e4")
 
     # The piece should now be on e4 and e2 should be empty
     piece = board.get_piece(e4_rank, e4_file)
@@ -64,13 +63,13 @@ def test_check_detection():
 
     # Create a position with check (Scholar's Mate setup)
     moves = [
-        get_move("e2", "e4"),  # e4
-        get_move("e7", "e5"),  # e5
-        get_move("d1", "h5"),  # Qh5
-        get_move("b8", "c6"),  # Nc6
-        get_move("f1", "c4"),  # Bc4
-        get_move("g8", "f6"),  # Nf6
-        get_move("h5", "f7"),  # Qxf7#
+        Move.from_uci("e2e4"),  # e4
+        Move.from_uci("e7e5"),  # e5
+        Move.from_uci("d1h5"),  # Qh5
+        Move.from_uci("b8c6"),  # Nc6
+        Move.from_uci("f1c4"),  # Bc4
+        Move.from_uci("g8f6"),  # Nf6
+        Move.from_uci("h5f7"),  # Qxf7#
     ]
 
     checks = []

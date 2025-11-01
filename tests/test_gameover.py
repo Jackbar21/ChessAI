@@ -8,7 +8,6 @@ from src.board import Board
 from src.move import Move
 from src.constants import Color, PieceType
 from src.movegen import MoveGenerator
-from utils.utils import get_move
 
 
 def test_not_over():
@@ -24,13 +23,13 @@ def test_checkmate():
     board.setup_initial_position()
     # Scholar's mate position: 1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7#
     moves = [
-        get_move("e2", "e4"),  # e4
-        get_move("e7", "e5"),  # e5
-        get_move("d1", "h5"),  # Qh5
-        get_move("b8", "c6"),  # Nc6
-        get_move("f1", "c4"),  # Bc4
-        get_move("g8", "f6"),  # Nf6
-        get_move("h5", "f7"),  # Qxf7#
+        Move.from_uci("e2e4"),  # e4
+        Move.from_uci("e7e5"),  # e5
+        Move.from_uci("d1h5"),  # Qh5
+        Move.from_uci("b8c6"),  # Nc6
+        Move.from_uci("f1c4"),  # Bc4
+        Move.from_uci("g8f6"),  # Nf6
+        Move.from_uci("h5f7"),  # Qxf7#
     ]
     for move in moves:
         board.make_move(move)
@@ -63,10 +62,10 @@ def test_threefold_repetition():
     # Initial board position technically counts as first occurrence
 
     # This sequence of 4 moves will return to the initial position
-    move1 = get_move("g1", "f3")  # Nf3
-    move2 = get_move("b8", "c6")  # Nc6
-    move3 = get_move("f3", "g1")  # Ng1
-    move4 = get_move("c6", "b8")  # Nb8
+    move1 = Move.from_uci("g1f3")  # Nf3
+    move2 = Move.from_uci("b8c6")  # Nc6
+    move3 = Move.from_uci("f3g1")  # Ng1
+    move4 = Move.from_uci("c6b8")  # Nb8
 
     board.make_move(move1)
     board.make_move(move2)
@@ -107,7 +106,7 @@ def test_50_move_rule():
 
     assert not board.is_game_over()
 
-    move = get_move("a1", "a2")
+    move = Move.from_uci("a1a2")
     board.make_move(move)
 
     assert board.is_game_over()
