@@ -110,4 +110,5 @@ def test_50_move_rule():
     move = get_move("a1", "a2")
     board.make_move(move)
 
+    assert False
     assert board.is_game_over()
