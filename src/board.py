@@ -629,3 +629,53 @@ class Board:
         """Set up the standard chess starting position."""
         initial_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         self.from_fen(initial_fen)
+
+    def get_move_from_uci(self, uci: str) -> Move:
+        """
+        Convert a UCI string to a Move object.
+
+        Args:
+            uci: The UCI string (e.g., 'e2e4', 'e7e8q')
+
+        Returns:
+            The corresponding Move object
+        """
+        from_file = "abcdefgh".index(uci[0])
+        from_rank = int(uci[1]) - 1
+        to_file = "abcdefgh".index(uci[2])
+        to_rank = int(uci[3]) - 1
+
+        promotion_piece_type = None
+        if len(uci) == 5:
+            promotion_char = uci[4].upper()
+            fen_char_to_piece_type = {pt.char.upper(): pt for pt in PieceType}
+            promotion_piece_type = fen_char_to_piece_type[promotion_char]
+
+        moving_piece = self.get_piece(from_rank, from_file)
+        if moving_piece is None:
+            raise ValueError(f"No piece at {from_rank},{from_file}")
+
+        captured_piece_type = None
+        is_en_passant = (
+            moving_piece.piece_type == PieceType.PAWN
+            and (to_rank, to_file) == self.en_passant_square
+        )
+        if is_en_passant:
+            captured_piece_type = PieceType.PAWN
+        elif self.get_piece(to_rank, to_file):
+            captured_piece_type = self.get_piece(to_rank, to_file).piece_type
+
+        is_castling = (
+            moving_piece.piece_type == PieceType.KING and abs(to_file - from_file) == 2
+        )
+
+        return Move(
+            from_rank,
+            from_file,
+            to_rank,
+            to_file,
+            captured_piece_type,
+            is_en_passant,
+            is_castling,
+            promotion_piece_type,
+        )

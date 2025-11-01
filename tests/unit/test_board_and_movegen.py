@@ -20,11 +20,15 @@ def test_move_generation():
     print(f"Legal moves from starting position: {len(legal_moves)}")
     assert len(legal_moves) == 20, "Expected 20 legal moves in starting position"
 
-    assert Move.from_uci("e2e4") in legal_moves, "Move e2-e4 should be legal"
-    assert Move.from_uci("e2e5") not in legal_moves, "Move e2-e5 should not be legal"
+    assert board.get_move_from_uci("e2e4") in legal_moves, "Move e2-e4 should be legal"
+    assert (
+        board.get_move_from_uci("e2e5") not in legal_moves
+    ), "Move e2-e5 should not be legal"
 
-    assert Move.from_uci("b1c3") in legal_moves, "Move Nb1-c3 should be legal"
-    assert Move.from_uci("b1d2") not in legal_moves, "Move Nb1-d2 should not be legal"
+    assert board.get_move_from_uci("b1c3") in legal_moves, "Move Nb1-c3 should be legal"
+    assert (
+        board.get_move_from_uci("b1d2") not in legal_moves
+    ), "Move Nb1-d2 should not be legal"
 
 
 def test_make_unmake_move():
@@ -32,7 +36,7 @@ def test_make_unmake_move():
     board = Board()
     board.setup_initial_position()
 
-    move = Move.from_uci("e2e4")
+    move = board.get_move_from_uci("e2e4")
     board.make_move(move)
 
     e2_rank, e2_file = board.notation_to_square("e2")
@@ -65,13 +69,13 @@ def test_check_detection():
 
     # Create a position with check (Scholar's Mate setup)
     moves = [
-        Move.from_uci("e2e4"),  # e4
-        Move.from_uci("e7e5"),  # e5
-        Move.from_uci("d1h5"),  # Qh5
-        Move.from_uci("b8c6"),  # Nc6
-        Move.from_uci("f1c4"),  # Bc4
-        Move.from_uci("g8f6"),  # Nf6
-        Move.from_uci("h5f7"),  # Qxf7#
+        board.get_move_from_uci("e2e4"),  # e4
+        board.get_move_from_uci("e7e5"),  # e5
+        board.get_move_from_uci("d1h5"),  # Qh5
+        board.get_move_from_uci("b8c6"),  # Nc6
+        board.get_move_from_uci("f1c4"),  # Bc4
+        board.get_move_from_uci("g8f6"),  # Nf6
+        board.get_move_from_uci("h5f7"),  # Qxf7#
     ]
 
     checks = []
@@ -98,13 +102,13 @@ def test_checkmate():
     board.setup_initial_position()
     # Scholar's mate position: 1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7#
     moves = [
-        Move.from_uci("e2e4"),  # e4
-        Move.from_uci("e7e5"),  # e5
-        Move.from_uci("d1h5"),  # Qh5
-        Move.from_uci("b8c6"),  # Nc6
-        Move.from_uci("f1c4"),  # Bc4
-        Move.from_uci("g8f6"),  # Nf6
-        Move.from_uci("h5f7"),  # Qxf7#
+        board.get_move_from_uci("e2e4"),  # e4
+        board.get_move_from_uci("e7e5"),  # e5
+        board.get_move_from_uci("d1h5"),  # Qh5
+        board.get_move_from_uci("b8c6"),  # Nc6
+        board.get_move_from_uci("f1c4"),  # Bc4
+        board.get_move_from_uci("g8f6"),  # Nf6
+        board.get_move_from_uci("h5f7"),  # Qxf7#
     ]
     for move in moves:
         board.make_move(move)
@@ -137,10 +141,10 @@ def test_threefold_repetition():
     # Initial board position technically counts as first occurrence
 
     # This sequence of 4 moves will return to the initial position
-    move1 = Move.from_uci("g1f3")  # Nf3
-    move2 = Move.from_uci("b8c6")  # Nc6
-    move3 = Move.from_uci("f3g1")  # Ng1
-    move4 = Move.from_uci("c6b8")  # Nb8
+    move1 = board.get_move_from_uci("g1f3")  # Nf3
+    move2 = board.get_move_from_uci("b8c6")  # Nc6
+    move3 = board.get_move_from_uci("f3g1")  # Ng1
+    move4 = board.get_move_from_uci("c6b8")  # Nb8
 
     board.make_move(move1)
     board.make_move(move2)
@@ -181,7 +185,7 @@ def test_50_move_rule():
 
     assert not board.is_game_over()
 
-    move = Move.from_uci("a1a2")
+    move = board.get_move_from_uci("a1a2")
     board.make_move(move)
 
     assert board.is_game_over()
@@ -192,10 +196,10 @@ def test_castling_available():
     fen = "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1"  # All four castling rights available
     board.from_fen(fen)
 
-    white_kingside_castle = Move.from_uci("e1g1")
-    white_queenside_castle = Move.from_uci("e1c1")
-    black_kingside_castle = Move.from_uci("e8g8")
-    black_queenside_castle = Move.from_uci("e8c8")
+    white_kingside_castle = board.get_move_from_uci("e1g1")
+    white_queenside_castle = board.get_move_from_uci("e1c1")
+    black_kingside_castle = board.get_move_from_uci("e8g8")
+    black_queenside_castle = board.get_move_from_uci("e8c8")
     print(board)
 
     # Assert white can castle both sides, then choose one
@@ -228,10 +232,10 @@ def test_castling_not_available():
     fen = "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1"  # All four castling rights not available
     board.from_fen(fen)
 
-    white_kingside_castle = Move.from_uci("e1g1")
-    white_queenside_castle = Move.from_uci("e1c1")
-    black_kingside_castle = Move.from_uci("e8g8")
-    black_queenside_castle = Move.from_uci("e8c8")
+    white_kingside_castle = board.get_move_from_uci("e1g1")
+    white_queenside_castle = board.get_move_from_uci("e1c1")
+    black_kingside_castle = board.get_move_from_uci("e8g8")
+    black_queenside_castle = board.get_move_from_uci("e8c8")
     print(board)
 
     # Assert white cannot castle either side, then make a move

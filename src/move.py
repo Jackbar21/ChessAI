@@ -114,37 +114,3 @@ class Move:
             uci_move += self.promotion_piece_type.char.lower()
 
         return uci_move
-
-    @staticmethod
-    def from_uci(uci_str: str) -> Optional["Move"]:
-        """Create a Move object from a UCI format string."""
-        if not (4 <= len(uci_str) <= 5):
-            return None
-
-        try:
-            from_file = ord(uci_str[0]) - ord("a")
-            from_rank = int(uci_str[1]) - 1
-            to_file = ord(uci_str[2]) - ord("a")
-            to_rank = int(uci_str[3]) - 1
-
-            promotion_type = None
-            if len(uci_str) == 5:
-                promotion_char = uci_str[4].lower()
-                promotion_map = {
-                    "q": PieceType.QUEEN,
-                    "r": PieceType.ROOK,
-                    "b": PieceType.BISHOP,
-                    "n": PieceType.KNIGHT,
-                }
-                promotion_type = promotion_map[promotion_char]
-
-            return Move(
-                from_rank,
-                from_file,
-                to_rank,
-                to_file,
-                promotion_piece_type=promotion_type,
-            )
-
-        except (ValueError, IndexError):
-            return None

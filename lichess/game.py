@@ -96,7 +96,7 @@ class Game(threading.Thread):
         # Capture opponent's last move
         uci_move = uci_moves[-1]
         assert uci_move is not None, "No moves in game state"
-        move = Move.from_uci(uci_move)
+        move = self.board.get_move_from_uci(uci_move)
         self.board.make_move(move)
 
         # Now agent's turn
