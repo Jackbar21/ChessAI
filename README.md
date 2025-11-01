@@ -12,8 +12,8 @@ I’m using [chessprogramming.org](https://www.chessprogramming.org/) as a major
 
 | Difficulty | Goal                                                          | Status           |
 | ---------- | ------------------------------------------------------------- | ---------------- |
-| Easy       | Create an agent capable of playing randomized, legal moves    | In Progress      |
-| Medium     | Create an agent capable of beating me in a full game of chess | Not Yet Achieved |
+| Easy       | Create an agent capable of playing randomized, legal moves    | Achieved         |
+| Medium     | Create an agent capable of beating me in a full game of chess | In Progress      |
 | Hard       | Create an agent capable of beating Stockfish with knight odds | Not Yet Achieved |
 
 If you'd like to view my original ideas for tackling these goals, [click here!](GOAL_NOTES.md)
