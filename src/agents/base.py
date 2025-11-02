@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-from src import Board, Move, MoveGenerator, evaluate
+from src import Board, Move, MoveGenerator
+from src.evaluate.evaluate import evaluate
 
 
 class BaseAgent(ABC):

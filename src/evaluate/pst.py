@@ -148,6 +148,8 @@ def evaluate(board: Board) -> int:
     score += handle_white_piece(PieceType.KING, wk_rank, wk_file, endgame)
     score -= handle_black_piece(PieceType.KING, bk_rank, bk_file, endgame)
 
+    return score
+
 
 def handle_white_piece(piece_type, rank, file, is_endgame=False) -> int:
     """
