@@ -4,9 +4,10 @@ Positive values favor White, negative values favor Black.
 """
 
 from src import Board
-from .material import material
+from .material import evaluate as material
+from .pst import evaluate as pst
 
-EVALUATION_FUNCTIONS = [material]
+EVALUATION_FUNCTIONS = [material, pst]
 
 
 def evaluate(board: Board) -> int:

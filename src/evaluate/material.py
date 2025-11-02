@@ -1,7 +1,7 @@
 from src import Board, Color
 
 
-def material(board: Board) -> int:
+def evaluate(board: Board) -> int:
     """
     Simple material evaluation.
 
