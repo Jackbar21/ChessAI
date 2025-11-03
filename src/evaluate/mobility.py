@@ -2,14 +2,11 @@
 from src import Board, Color, MoveGenerator, PieceType
 from .utils import is_endgame
 
-# ~3-7 centipawns is common
-# NOTE: I'm using an extremely low weight of 0.1, to prioritize material
-# piece-square tables more. Otherwise, to overlook good moves such
-# as castling to prioritize mobility too much.
-MOBILITY_WEIGHT = 0.1
+
+MOBILITY_WEIGHT = 3  # ~3-7 centipawns is common
 
 
-def evaluate(board: Board) -> float:
+def evaluate(board: Board) -> int:
     """
     Evaluate mobility (number of legal moves difference between White and Black).
     TODO: Invest in optimizations to avoid generating all moves each evaluation.

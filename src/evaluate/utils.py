@@ -12,4 +12,6 @@ def is_endgame(board: Board) -> bool:
             piece = board.get_piece(rank, file)
             if piece and piece.piece_type not in (PieceType.PAWN, PieceType.KING):
                 major_minor_count += 1
+                if major_minor_count > 4:
+                    return False
     return major_minor_count <= 4

@@ -109,14 +109,14 @@ BLACK_PST_TABLES = {
 }
 
 
-def evaluate(board: Board) -> float:
+def evaluate(board: Board) -> int:
     """
     Piece-Square Table (PST) evaluation.
     This technique assigns values to pieces based on their positions on the board.
     """
     endgame = is_endgame(board)
 
-    score = 0.0
+    score = 0
     for rank in range(8):
         for file in range(8):
             piece = board.get_piece(rank, file)
