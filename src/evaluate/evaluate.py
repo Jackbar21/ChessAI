@@ -15,7 +15,7 @@ EVALUATION_FUNCTIONS_TO_WEIGHTS = {
     material: 1,
     pst: 1,
     pawn_structure: 1,
-    # mobility: 1,  # Too expensive, requires call to `generate_legal_moves` each time
+    mobility: 1,  # Too expensive, requires call to `generate_legal_moves` each time
 }
 
 
