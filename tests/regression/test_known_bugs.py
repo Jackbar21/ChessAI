@@ -29,13 +29,13 @@ def test_random_agent_illegal_move_regression():
     # Replay all moves up to the problematic position
     for move_str in moves.split():
         move = board.get_move_from_uci(move_str)
-        legal_moves = list(movegen.generate_legal_moves())
+        legal_moves = movegen.generate_legal_moves()
         assert move in legal_moves, f"Move {move_str} should be legal"
         board.make_move(move)
 
     # Now check that c3b4 is *not* legal
     illegal_move = board.get_move_from_uci("c3b4")
-    legal_moves = list(movegen.generate_legal_moves())
+    legal_moves = movegen.generate_legal_moves()
     assert illegal_move not in legal_moves, f"Move {illegal_move} should be illegal"
 
 
@@ -57,7 +57,7 @@ def test_minimax_agent_depth2_regression():
     # Replay all moves
     for move_str in moves.split():
         move = board.get_move_from_uci(move_str)
-        legal_moves = list(movegen.generate_legal_moves())
+        legal_moves = movegen.generate_legal_moves()
         assert move in legal_moves, f"Move {move_str} should be legal"
         board.make_move(move)
 
@@ -73,7 +73,7 @@ def test_castling_priority():
     board.from_fen(fen)
 
     movegen = MoveGenerator(board)
-    legal_moves = list(movegen.generate_legal_moves())
+    legal_moves = movegen.generate_legal_moves()
 
     castling_move = board.get_move_from_uci("e1g1")
     king_e2_move = board.get_move_from_uci("e1e2")
