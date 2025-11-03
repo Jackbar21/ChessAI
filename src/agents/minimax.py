@@ -151,16 +151,13 @@ class MinimaxAgent(BaseAgent):
                 return beta
             alpha = max(alpha, cur_eval)
 
-            # Only consider special moves (capture, promotion, castling)
-            special_moves = [
+            captures = [
                 move
                 for move in self.get_legal_moves()
                 if move.captured_piece_type is not None
-                or move.promotion_piece_type is not None
-                or move.is_castling is not None
             ]
 
-            for move in special_moves:
+            for move in captures:
                 self.board.make_move(move)
                 score = self._quiescence_search(alpha, beta, False, max_depth - 1)
                 self.board.unmake_move()
