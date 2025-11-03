@@ -2,7 +2,7 @@
 Regression tests to ensure that previously identified bugs do not reoccur.
 """
 
-from src import Board, MoveGenerator
+from src import Board, MoveGenerator, MinimaxAgent
 from src.evaluate.evaluate import evaluate
 
 
@@ -97,3 +97,60 @@ def test_castling_priority():
     assert (
         eval_after_castling > eval_after_king_e2
     ), "Castling should yield a better evaluation than king to e2"
+
+
+def test_avoid_threefold_repitition_in_winning_position():
+    """
+    Regression test for a historical bug where the engine would
+    choose moves that lead to threefold repetition even in winning positions.
+    This test sets up a position where the engine is winning and ensures
+    it does not choose a move that leads to repetition.
+    """
+    moves = "d2d4 g8f6 c1f4 b8c6 e2e3 d7d5 g1f3 c8f5 f1b5 a7a6 b5a4 e7e6 c2c3 f8d6 f4g3 d6g3 h2g3 b7b5 a4c2 f5c2 d1c2 f6e4 b1d2 e4d2 c2d2 d8d6 d2d3 h7h6 e3e4 e8g8 e4e5 d6e7 e1c1 g8h8 f3h4 e7g5 f2f4 g5g4 d1f1 b5b4 f4f5 g4g5 c1b1 b4c3 b2c3 a8b8 b1c2 a6a5 f5e6 f7e6 f1f8 b8f8 h1f1 f8f1 d3f1 g5g3 f1f8 h8h7 h4f3 g3g2 f3d2 g2g6 c2d1 g6d3 f8f3 d3f3 d2f3 h7g6 d1e2 g6f5 e2e3 a5a4 f3d2 h6h5 c3c4 d5c4 d2c4 h5h4 c4d2 h4h3 d2f3 a4a3 f3h2 c6b4 h2f1 b4a2 f1d2 h3h2 d2e4 h2h1q e4g3 f5g4 g3h1 a2c3 h1f2 g4f5 f2d3 a3a2 d3c1 a2a1q c1b3 a1e1 e3d3 c3e4 b3c5 e1c3 d3e2 e4c5 d4c5 f5e5 c5c6 g7g5 e2f2 g5g4 f2g2 c3f3 g2g1 e5d4 g1h2 e6e5 h2g1 d4d3 g1h2 d3d4 h2g1 d4d3 g1h2"
+    board = Board()
+    board.setup_initial_position()
+
+    rb = Board()
+    rb.from_fen("8/2p5/2P5/4p3/3k2p1/5q2/7K/8 w - - 0 1")
+
+    for move_str in moves.split():
+        move = board.get_move_from_uci(move_str)
+        board.make_move(move)
+
+    # Setup agent that was used in the game
+    agent = MinimaxAgent(board)
+    depth = 2
+
+    movegen = MoveGenerator(board)
+    legal_moves = movegen.generate_legal_moves()
+
+    assert (
+        max(board.fen_history.values(), default=0) < 3
+    ), "Position should not already be in repetition"
+
+    repetition_move = board.get_move_from_uci("d3d4")  # Move leading to repetition
+    assert repetition_move in legal_moves, "Repetition-inducing move should be legal"
+
+    # Make repetition move, ensure it leads to threefold repetition
+    board.make_move(repetition_move)
+    assert (
+        board.fen_history[board.position_fen()] >= 3
+    ), "Making the repetition move should lead to threefold repetition"
+    assert board.is_game_over(), "Game should be over due to threefold repetition"
+    assert evaluate(board) == 0, "Game should be a draw due to threefold repetition"
+    board.unmake_move()
+
+    # Now let the engine choose a move (should not be the repetition move, since it's winning)
+    best_move = agent.find_best_move(depth)
+    assert best_move in legal_moves, "Best move should be legal"
+    assert (
+        best_move != repetition_move
+    ), "Engine should avoid moves leading to threefold repetition in winning positions"
+    board.make_move(best_move)
+    assert (
+        board.fen_history[board.position_fen()] < 3
+    ), "Engine's move should not lead to threefold repetition"
+    assert not board.is_game_over(), "Game should not be over after engine's move"
+    assert (
+        evaluate(board) < 0
+    ), "Engine (playing black) should maintain winning position after its move"
