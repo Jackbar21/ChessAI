@@ -1,14 +1,14 @@
 from src import Board, Color
 
 
-def evaluate(board: Board) -> int:
+def evaluate(board: Board) -> float:
     """
     Simple material evaluation.
 
     Returns:
         Evaluation score in centipawns
     """
-    score = 0
+    score = 0.0
     for rank in range(8):
         for file in range(8):
             piece = board.get_piece(rank, file)

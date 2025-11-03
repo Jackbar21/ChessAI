@@ -7,12 +7,12 @@ DOUBLED_PAWN_PENALTY = 15
 PASSED_PAWN_BONUS = [0, 5, 10, 20, 35, 60, 100, 200]
 
 
-def evaluate(board: Board) -> int:
+def evaluate(board: Board) -> float:
     """
     Evaluate pawn structure on the board.
     TODO: Implement more features like backward pawns, pawn islands, etc.
     """
-    score = 0
+    score = 0.0
 
     white_pawns, black_pawns = [], []
     for rank in range(8):

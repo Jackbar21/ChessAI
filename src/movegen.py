@@ -42,20 +42,28 @@ class MoveGenerator:
 
     def generate_pseudo_legal_moves(self) -> List[Move]:
         """
-        Generate all pseudo-legal moves (moves that follow piece movement rules
-        but may leave the king in check).
+        Generate all pseudo-legal moves for the current player
+        (moves that follow piece movement rules but may leave the king in check).
+
+        Returns:
+            List of pseudo-legal Move objects
+        """
+        color = self.board.turn
+        return self.generate_pseudo_legal_moves_for_color(color)
+
+    def generate_pseudo_legal_moves_for_color(self, color: Color) -> List[Move]:
+        """
+        Generate all pseudo-legal moves for color (moves that follow piece
+        movement rules but may leave the king in check).
 
         Returns:
             List of pseudo-legal Move objects
         """
         moves = []
-        current_color = self.board.turn
 
         # Get pieces for the current player
         pieces = (
-            self.board.white_pieces
-            if current_color == Color.WHITE
-            else self.board.black_pieces
+            self.board.white_pieces if color == Color.WHITE else self.board.black_pieces
         )
 
         move_generators = {
