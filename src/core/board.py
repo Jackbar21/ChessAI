@@ -3,9 +3,9 @@ Board representation and game state management.
 """
 
 from typing import List, Optional, Tuple, Dict, Any
-from src.constants import Color, PieceType
-from src.piece import Piece
-from src.move import Move
+from src.core.constants import Color, PieceType, GameStatus
+from src.core.piece import Piece
+from src.core.move import Move
 from collections import defaultdict
 
 
@@ -31,6 +31,9 @@ class Board:
         # Keep track of pieces for easy iteration
         self.white_pieces: set[Tuple[int, int, Piece]] = set()  # (rank, file, piece)
         self.black_pieces: set[Tuple[int, int, Piece]] = set()  # (rank, file, piece)
+        self.major_minor_count = (
+            0  # Major/minor piece count (excluding kings and pawns)
+        )
 
         # Game state
         self.turn = Color.WHITE
@@ -80,6 +83,8 @@ class Board:
             )
             # Using set remove instead of discard to catch errors
             piece_set.remove((rank, file, old_piece))
+            if old_piece.piece_type not in (PieceType.KING, PieceType.PAWN):
+                self.major_minor_count -= 1
 
         # Set the new piece
         self.board[rank][file] = piece
@@ -92,6 +97,8 @@ class Board:
             else:
                 assert (rank, file, piece) not in self.black_pieces
                 self.black_pieces.add((rank, file, piece))
+            if piece.piece_type not in (PieceType.KING, PieceType.PAWN):
+                self.major_minor_count += 1
 
     def square_to_notation(self, rank: int, file: int) -> str:
         """Convert rank/file to algebraic notation (e.g., 0,0 -> 'a1')."""
@@ -314,15 +321,16 @@ class Board:
         Returns:
             True if the game is over, False otherwise
         """
-        from src.movegen import MoveGenerator
+        result = self.get_game_status()
+        return result != GameStatus.ONGOING
 
-        move_gen = MoveGenerator(self)
-
-        # No legal moves (checkmate or stalemate)
-        legal_moves = move_gen.generate_legal_moves()
-        if not legal_moves:
-            return True
-
+    def is_technical_draw(self) -> bool:
+        """
+        Check if the game is a technical draw via one of the following:
+        1. 50-move rule
+        2. Threefold repetition
+        3. Insufficient material
+        """
         # 50-move rule
         if self.halfmove_clock >= 100:
             return True
@@ -338,6 +346,39 @@ class Board:
             return True
 
         return False
+
+    def get_game_status(self) -> GameStatus:
+        """
+        Get the status of the game.
+
+        Returns:
+            GameResult enum indicating the game status
+        """
+        # Check for 50-move rule, threefold repetition, insufficient material
+        if self.is_technical_draw():
+            return GameStatus.DRAW
+
+        from src.core.movegen import MoveGenerator
+
+        move_gen = MoveGenerator(self)
+
+        # No legal moves (checkmate or stalemate)
+        legal_moves = move_gen.generate_legal_moves()
+        if not legal_moves:
+            # Checkmate
+            if self.is_in_check(self.turn):
+                return (
+                    GameStatus.BLACK_WON
+                    if self.turn == Color.WHITE
+                    else GameStatus.WHITE_WON
+                )
+            # Stalemate
+            else:
+                assert not self.is_in_check(self.opponent_color())
+                return GameStatus.DRAW
+
+        # Game is not over
+        return GameStatus.ONGOING
 
     def make_move(self, move: Move) -> None:
         """
@@ -666,7 +707,9 @@ class Board:
             captured_piece_type = self.get_piece(to_rank, to_file).piece_type
 
         is_castling = (
-            moving_piece.piece_type == PieceType.KING and abs(to_rank - from_rank) == 0 and abs(to_file - from_file) == 2
+            moving_piece.piece_type == PieceType.KING
+            and abs(to_rank - from_rank) == 0
+            and abs(to_file - from_file) == 2
         )
 
         return Move(

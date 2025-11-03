@@ -1,12 +1,7 @@
-"""
-Evaluation functions for chess positions.
-Positive values favor White, negative values favor Black.
-"""
-
 from src import Board, Color
 
 
-def material(board: Board) -> int:
+def evaluate(board: Board) -> int:
     """
     Simple material evaluation.
 
@@ -24,10 +19,3 @@ def material(board: Board) -> int:
                 else:
                     score -= value
     return score
-
-
-def evaluate(board: Board) -> int:
-    """
-    Default evaluation function that can be used by agents.
-    """
-    return material(board)

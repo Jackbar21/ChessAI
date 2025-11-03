@@ -3,7 +3,7 @@ Move representation for the chess engine.
 """
 
 from typing import Optional
-from src.constants import PieceType
+from src.core.constants import PieceType
 
 
 class Move:

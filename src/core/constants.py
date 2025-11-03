@@ -27,3 +27,10 @@ class PieceType(Enum):
         self.centipawn_value = centipawn_value  # can't use 'value', reserved by Enum
         self.char = char
         self.is_promotable = is_promotable
+
+
+class GameStatus(Enum):
+    ONGOING = auto()
+    WHITE_WON = auto()
+    BLACK_WON = auto()
+    DRAW = auto()

@@ -1,7 +1,6 @@
 from typing import Callable
 from src.agents.base import *
 from src import Color
-from src.evaluate import evaluate
 
 
 class MinimaxAgent(BaseAgent):
@@ -14,9 +13,8 @@ class MinimaxAgent(BaseAgent):
     - Quiescence search to avoid horizon effect: https://www.chessprogramming.org/Quiescence_Search
     """
 
-    def __init__(self, board: Board, eval_function: Callable[[Board], int] = evaluate):
+    def __init__(self, board: Board):
         super().__init__(board)
-        self.eval_function = eval_function
 
     def find_best_move(self, depth: int) -> Optional[Move]:
         """
@@ -143,7 +141,7 @@ class MinimaxAgent(BaseAgent):
         Returns:
             The evaluation score
         """
-        cur_eval = self.eval_function(self.board)
+        cur_eval = self.evaluate_board()
 
         if max_depth <= 0:
             return cur_eval
@@ -153,14 +151,16 @@ class MinimaxAgent(BaseAgent):
                 return beta
             alpha = max(alpha, cur_eval)
 
-            # Only consider captures
-            captures = [
+            # Only consider special moves (capture, promotion, castling)
+            special_moves = [
                 move
                 for move in self.move_generator.generate_legal_moves()
                 if move.captured_piece_type is not None
+                or move.promotion_piece_type is not None
+                or move.is_castling is not None
             ]
 
-            for move in captures:
+            for move in special_moves:
                 self.board.make_move(move)
                 score = self._quiescence_search(alpha, beta, False, max_depth - 1)
                 self.board.unmake_move()

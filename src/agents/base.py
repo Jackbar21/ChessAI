@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 from src import Board, Move, MoveGenerator
+from src.evaluate.evaluate import evaluate
 
 
 class BaseAgent(ABC):
@@ -25,3 +26,13 @@ class BaseAgent(ABC):
             The best move, or None if no legal moves (checkmate/stalemate)
         """
         raise NotImplementedError("Must be implemented by subclass")
+
+    def evaluate_board(self) -> int:
+        """
+        Evaluate the current board position.
+
+        Returns:
+            Evaluation score as an integer
+        """
+        # Default implementation, can be overridden by subclasses
+        return evaluate(self.board)

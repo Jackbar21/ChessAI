@@ -4,7 +4,8 @@ Chess AI Engine - Main Entry Point
 This file demonstrates the basic functionality of the chess engine.
 """
 
-from src import Board, Color, PieceType
+from src import Board
+from src.evaluate.evaluate import evaluate
 
 
 def main():
@@ -25,7 +26,7 @@ def main():
     # Display some board information
     print("Board Information:")
     print(f"Turn: {board.turn.name}")
-    print(f"Material evaluation: {board.evaluate()}")
+    print(f"Material evaluation: {evaluate(board)}")
     print()
 
     # Show piece counts
