@@ -81,7 +81,6 @@ def test_castling_priority():
     assert castling_move in legal_moves, "Castling move should be legal"
     assert king_e2_move in legal_moves, "King to e2 move should be legal"
 
-    # assert False
     cur_eval = evaluate(board)
 
     # Make the castling move and evaluate

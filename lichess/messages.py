@@ -6,7 +6,7 @@ SHORT_GREETING_3 = "Otherwise, just type something funny. Good luck!"
 
 GREETINGS = [SHORT_GREETING_1, SHORT_GREETING_2, SHORT_GREETING_3]
 
-RESPONSES = [
+CHAT_RESPONSES = [
     "Bro really said '{{text}}'. ROFLCOPTER!",
     "Do you even chess, bro?",
     "Do you think you're funny lil bro?",
@@ -47,11 +47,48 @@ LOST_RESPONSES = [
     "If this was Clash Royale, I'd use the Princess Yawn emote right now.",
 ]
 
+ABORTED_RESPONSES = [
+    "Game aborted? Coward! Come back when you're ready to face me, {{username}}!",
+    "You ran away? Typical. Next time, face me head-on, {{username}}!",
+]
 
-def generate_response(username: str, text: str) -> str:
+RESIGN_RESPONSES = [
+    "Resigned? I guess even champions know when to quit!",
+    "Giving up already, {{username}}? I thought you were tougher than that!",
+    "Ben Finegold would be ashamed of that resignation, {{username}}!",
+    "That's right, walk away while you still can, {{username}}!",
+]
+
+TIMEOUT_RESPONSES = [
+    "Timed out? Looks like you couldn't handle the pressure, {{username}}!",
+    "Running out of time is the ultimate checkmate, {{username}}!",
+    "Next time, try to manage your time better, {{username}}! Chess is also about strategy!",
+]
+
+GAME_OVER_RESPONSES = {
+    "win": WON_RESPONSES,
+    "draw": DRAW_RESPONSES,
+    "loss": LOST_RESPONSES,
+    "aborted": ABORTED_RESPONSES,
+    "resign": RESIGN_RESPONSES,
+    "timeout": TIMEOUT_RESPONSES,
+}
+
+
+def generate_chat_response(username: str, text: str) -> str:
     """Generate a chat response as reply to user message."""
-    response_template = random_choice(RESPONSES)
+    response_template = random_choice(CHAT_RESPONSES)
     response = response_template.replace("{{username}}", username).replace(
         "{{text}}", text
     )
+    return response
+
+
+def generate_game_over_response(username: str, result: str) -> str:
+    """Generate a response for game over based on result."""
+    responses = GAME_OVER_RESPONSES.get(result, [])
+    if not responses:
+        return "Game over!"
+    response_template = random_choice(responses)
+    response = response_template.replace("{{username}}", username)
     return response
