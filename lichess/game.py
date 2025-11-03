@@ -14,8 +14,9 @@ class Game(threading.Thread):
         self.client = client
         self.stream = client.bots.stream_game_state(self.game_id)
         self.current_state = next(self.stream)
-        self.username = client.account.get()["username"]
         self.color = event["color"]
+        self.username = client.account.get()["username"]
+        self.opponent_username = event["opponent"]["username"]
 
         self.board = Board()
         self.board.from_fen(event["fen"])
@@ -28,7 +29,7 @@ class Game(threading.Thread):
         for greeting in GREETINGS:
             self.client.bots.post_message(
                 self.game_id,
-                greeting.replace("{{username}}", event["opponent"]["username"]),
+                greeting.replace("{{username}}", self.opponent_username),
             )
 
         if event["isMyTurn"]:
@@ -132,6 +133,6 @@ class Game(threading.Thread):
         elif status == "stalemate":
             outcome = "draw"
 
-        response = generate_game_over_response(self.username, outcome)
+        response = generate_game_over_response(self.opponent_username, outcome)
         self.client.bots.post_message(game_id, response)
         return response
