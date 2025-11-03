@@ -1,4 +1,5 @@
 from src import Board, Color, PieceType
+from utils import is_endgame
 
 # Pawns
 PAWN_TABLE_WHITE = [
@@ -113,10 +114,7 @@ def evaluate(board: Board) -> float:
     Piece-Square Table (PST) evaluation.
     This technique assigns values to pieces based on their positions on the board.
     """
-    # Save king evaluations for later, to determine endgame status
-    major_minor_pieces = []
-    wk_rank, wk_file = None, None  # White king position
-    bk_rank, bk_file = None, None  # Black king position
+    endgame = is_endgame(board)
 
     score = 0.0
     for rank in range(8):
@@ -125,28 +123,10 @@ def evaluate(board: Board) -> float:
             if not piece:
                 continue
 
-            # Save king positions for endgame detection
-            if piece.piece_type == PieceType.KING:
-                if piece.color == Color.WHITE:
-                    wk_rank, wk_file = rank, file
-                else:
-                    bk_rank, bk_file = rank, file
-                continue
-            # Collect major and minor pieces for endgame detection
-            elif piece.piece_type != PieceType.PAWN:
-                major_minor_pieces.append(piece)
-
             if piece.color == Color.WHITE:
-                score += handle_white_piece(piece.piece_type, rank, file)
+                score += handle_white_piece(piece.piece_type, rank, file, endgame)
             else:
-                score -= handle_black_piece(piece.piece_type, rank, file)
-
-    # Handle kings after determining endgame status
-    endgame = is_endgame(major_minor_pieces)
-    assert wk_rank is not None and wk_file is not None
-    assert bk_rank is not None and bk_file is not None
-    score += handle_white_piece(PieceType.KING, wk_rank, wk_file, endgame)
-    score -= handle_black_piece(PieceType.KING, bk_rank, bk_file, endgame)
+                score -= handle_black_piece(piece.piece_type, rank, file, endgame)
 
     return score
 
@@ -177,11 +157,3 @@ def handle_black_piece(piece_type, rank, file, is_endgame=False) -> int:
         )
 
     return BLACK_PST_TABLES[piece_type][rank][file]
-
-
-def is_endgame(major_minor_pieces) -> bool:
-    """
-    Determine if the game is in the endgame phase.
-    """
-    # TODO: Improve endgame detection logic
-    return len(major_minor_pieces) <= 4
