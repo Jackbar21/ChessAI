@@ -30,7 +30,7 @@ class MinimaxAgent(BaseAgent):
         alpha = float("-inf")
         beta = float("inf")
 
-        legal_moves = self.move_generator.generate_legal_moves()
+        legal_moves = self.get_legal_moves()
 
         if not legal_moves:
             return None  # No legal moves (checkmate or stalemate)
@@ -86,7 +86,7 @@ class MinimaxAgent(BaseAgent):
             return self._quiescence_search(alpha, beta, is_maximizing)
 
         # Base case: check for game over
-        legal_moves = self.move_generator.generate_legal_moves()
+        legal_moves = self.get_legal_moves()
         if not legal_moves:
             if self.board.is_in_check(self.board.turn):
                 # Checkmate - very bad for current player
@@ -154,7 +154,7 @@ class MinimaxAgent(BaseAgent):
             # Only consider special moves (capture, promotion, castling)
             special_moves = [
                 move
-                for move in self.move_generator.generate_legal_moves()
+                for move in self.get_legal_moves()
                 if move.captured_piece_type is not None
                 or move.promotion_piece_type is not None
                 or move.is_castling is not None
@@ -177,7 +177,7 @@ class MinimaxAgent(BaseAgent):
 
             captures = [
                 move
-                for move in self.move_generator.generate_legal_moves()
+                for move in self.get_legal_moves()
                 if move.captured_piece_type is not None
             ]
 
