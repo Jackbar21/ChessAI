@@ -282,3 +282,35 @@ def test_castling_rules(fen: str, can_castle: bool):
     assert (
         expected == actual
     ), f"Expected can castle: {expected}, but got {actual} for position:\n{board}"
+
+
+def test_castling_rights_after_rook_move():
+    """
+    Test that moving a rook, then moving it back, invalidates castling rights on that side.
+    """
+    board = Board()
+    fen = "4k3/8/8/8/8/8/8/4K2R w K - 0 1"
+    board.from_fen(fen)
+    movegen = MoveGenerator(board)
+
+    # Initial state: white can castle kingside and queenside
+    assert board.castling_rights[Color.WHITE]["kingside"]
+    assert board.get_move_from_uci("e1g1") in movegen.generate_legal_moves()
+
+    # Move the kingside rook forward 1 square
+    rook_move = board.get_move_from_uci("h1h2")
+    board.make_move(rook_move)
+
+    # Black to move (make a random legal move)
+    print(f"{movegen.generate_legal_moves()=}")
+    board.make_move(random_choice(movegen.generate_legal_moves()))
+
+    # White
+    rook_move_back = board.get_move_from_uci("h2h1")
+    board.make_move(rook_move_back)
+
+    # Kingside castling should now be unavailable
+    assert not board.castling_rights[Color.WHITE]["kingside"]
+    assert board.get_move_from_uci("e1g1") not in movegen.generate_legal_moves()
+    _, _, castling_rights, _, _, _ = board.to_fen().split(" ")
+    assert castling_rights == "-", f"Expected no castling rights, got {castling_rights}"

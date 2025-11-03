@@ -3,6 +3,7 @@ Regression tests to ensure that previously identified bugs do not reoccur.
 """
 
 from src import Board, MoveGenerator
+from src.evaluate.evaluate import evaluate
 
 
 def test_random_agent_illegal_move_regression():
@@ -59,3 +60,41 @@ def test_minimax_agent_depth2_regression():
         legal_moves = movegen.generate_legal_moves()
         assert move in legal_moves, f"Move {move_str} should be legal"
         board.make_move(move)
+
+
+def test_castling_priority():
+    """
+    This is a game that I was playing against MinimaxAgent with depth=2 using alpha-beta & quiescence search.
+    At this point of the game, the agent decided to play Ke2 instead of another move like castling. The
+    PST function should reward castling more than moving the king to e2.
+    """
+    board = Board()
+    fen = "r2qkb1r/3b1ppp/p1p1pn2/3pN1B1/3P4/2NQ4/PPP2PPP/R3K2R w KQkq - 0 11"
+    board.from_fen(fen)
+
+    movegen = MoveGenerator(board)
+    legal_moves = movegen.generate_legal_moves()
+
+    castling_move = board.get_move_from_uci("e1g1")
+    king_e2_move = board.get_move_from_uci("e1e2")
+
+    assert castling_move in legal_moves, "Castling move should be legal"
+    assert king_e2_move in legal_moves, "King to e2 move should be legal"
+
+    # assert False
+    cur_eval = evaluate(board)
+
+    # Make the castling move and evaluate
+    board.make_move(castling_move)
+    eval_after_castling = evaluate(board)
+    board.unmake_move()
+
+    # Make the king to e2 move and evaluate
+    board.make_move(king_e2_move)
+    eval_after_king_e2 = evaluate(board)
+    board.unmake_move()
+
+    assert eval_after_castling > cur_eval, "Castling should improve evaluation"
+    assert (
+        eval_after_castling > eval_after_king_e2
+    ), "Castling should yield a better evaluation than king to e2"
