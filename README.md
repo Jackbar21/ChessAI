@@ -24,16 +24,37 @@ If you'd like to view my original ideas for tackling these goals, [click here!](
 
 ```
 ChessAI/
-├── src/
-│   ├── __init__.py       # Package exports
-│   ├── constants.py      # Enums and constants
-│   ├── piece.py          # Piece representation
-│   ├── board.py          # Board state and operations
-│   ├── move.py           # Move representation
-│   ├── movegen.py        # Move generation engine
-│   └── search.py         # AI search algorithm
-├── main.py               # Demo script
-├── test_chess.py         # Comprehensive test suite
+├── src/                   # Main source code
+│   ├── __init__.py
+│   ├── core/              # Fundamental chess objects
+│   │   ├── __init__.py
+│   │   ├── board.py
+│   │   ├── move.py
+│   │   ├── piece.py
+│   │   ├── movegen.py
+│   │   └── constants.py
+│   ├── agents/            # All AI agents
+│   │   ├── base.py
+│   │   ├── minimax.py
+│   │   ├── negamax.py
+│   │   ├── random.py
+│   │   └── neuralnet.py
+│   └── evaluate/          # Evaluation functions
+│       ├── evaluate.py
+│       ├── material.py
+│       ├── pst.py
+│       ├── pawn_structure.py
+│       ├── mobility.py
+│       └── utils.py
+├── tests/                 # Testing suite
+│   ├── unit/
+│   │   ├── test_board_and_movegen.py
+│   │   └── test_evaluate.py
+│   ├── integration/
+│   │   └── test_agent_vs_agent.py
+│   └── regression/
+│       └── test_known_bugs.py
+├── main.py                # Demo script
 └── README.md
 ```
 
