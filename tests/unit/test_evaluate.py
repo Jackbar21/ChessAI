@@ -1,9 +1,10 @@
 from src import Board, PieceType
 from src.evaluate.evaluate import evaluate
 from src.evaluate.material import evaluate as material
+from src.evaluate.pst import evaluate as pst
 
 
-def test_evaluate_material():
+def test_material():
     """Test the material evaluation function."""
     board = Board()
     board.setup_initial_position()
@@ -27,3 +28,29 @@ def test_evaluate_material():
     score = material(board)
     expected_score = PieceType.PAWN.centipawn_value - PieceType.KNIGHT.centipawn_value
     assert score == expected_score, f"Expected {expected_score}, got {score}"
+
+
+def test_pst():
+    """Test the piece-square table evaluation function."""
+    board = Board()
+    board.setup_initial_position()
+
+    # Initial position should be equal
+    score = pst(board)
+    assert score == 0, f"Expected 0, got {score}"
+
+    # Move pawn to d4
+    move = board.get_move_from_uci("d2d4")
+    board.make_move(move)
+
+    score = pst(board)
+    assert score > 0, f"Expected positive score for white pawn on d4, got {score}"
+
+    # Move black knight to f6
+    move = board.get_move_from_uci("g8f6")
+    board.make_move(move)
+
+    score = pst(board)
+    assert (
+        score < 0
+    ), f"Expected negative score for white after black knight moved to f6, got {score}"
