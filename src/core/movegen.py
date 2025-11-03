@@ -5,7 +5,7 @@ This module handles generating all legal moves for each piece type,
 including special moves like castling, en passant, and pawn promotion.
 """
 
-from typing import List, Tuple
+from typing import List, Tuple, Generator
 from src.core.constants import Color, PieceType
 from src.core.move import Move
 from src.core.board import Board
@@ -23,22 +23,19 @@ class MoveGenerator:
         """
         self.board = board
 
-    def generate_legal_moves(self) -> List[Move]:
+    def generate_legal_moves(self) -> Generator[Move, None, None]:
         """
         Generate all legal moves for the current position.
 
         Returns:
-            List of legal Move objects
+            Generator of legal Move objects
         """
         pseudo_legal_moves = self.generate_pseudo_legal_moves()
-        legal_moves = []
 
         # Filter out moves that leave the king in check
         for move in pseudo_legal_moves:
             if self._is_legal(move):
-                legal_moves.append(move)
-
-        return legal_moves
+                yield move
 
     def generate_pseudo_legal_moves(self) -> List[Move]:
         """

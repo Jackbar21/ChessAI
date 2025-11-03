@@ -363,7 +363,7 @@ class Board:
         move_gen = MoveGenerator(self)
 
         # No legal moves (checkmate or stalemate)
-        legal_moves = move_gen.generate_legal_moves()
+        legal_moves = list(move_gen.generate_legal_moves())
         if not legal_moves:
             # Checkmate
             if self.is_in_check(self.turn):

@@ -16,7 +16,7 @@ def test_move_generation():
     board.setup_initial_position()
     movegen = MoveGenerator(board)
 
-    legal_moves = movegen.generate_legal_moves()
+    legal_moves = list(movegen.generate_legal_moves())
     print(f"Legal moves from starting position: {len(legal_moves)}")
     assert len(legal_moves) == 20, "Expected 20 legal moves in starting position"
 
@@ -112,7 +112,7 @@ def test_checkmate():
 
     # Black has no legal moves, should be checkmate
     movegen = MoveGenerator(board)
-    legal_moves = movegen.generate_legal_moves()
+    legal_moves = list(movegen.generate_legal_moves())
     assert len(legal_moves) == 0, "Black should have no legal moves (checkmate)"
     assert board.is_in_check(Color.BLACK), "Black should be in check"
     assert board.is_game_over(), "Game should be over (checkmate)"
@@ -199,7 +199,7 @@ def test_castling_available():
 
     # Assert white can castle both sides, then choose one
     movegen = MoveGenerator(board)
-    legal_moves = movegen.generate_legal_moves()
+    legal_moves = list(movegen.generate_legal_moves())
     print(f"Legal moves: {[move.to_uci() for move in legal_moves]}")
     assert (
         white_kingside_castle in legal_moves
@@ -211,7 +211,7 @@ def test_castling_available():
     print(board)
 
     # Now black to move, assert black can castle both sides, then choose one
-    legal_moves = movegen.generate_legal_moves()
+    legal_moves = list(movegen.generate_legal_moves())
     assert (
         black_kingside_castle in legal_moves
     ), "Black kingside castling should be legal"
@@ -235,7 +235,7 @@ def test_castling_not_available():
 
     # Assert white cannot castle either side, then make a move
     movegen = MoveGenerator(board)
-    legal_moves = movegen.generate_legal_moves()
+    legal_moves = list(movegen.generate_legal_moves())
     print(f"Legal moves: {[move.to_uci() for move in legal_moves]}")
     assert (
         white_kingside_castle not in legal_moves
@@ -247,7 +247,7 @@ def test_castling_not_available():
     print(board)
 
     # Now black to move, assert black cannot castle either sides, then make a move
-    legal_moves = movegen.generate_legal_moves()
+    legal_moves = list(movegen.generate_legal_moves())
     assert (
         black_kingside_castle not in legal_moves
     ), "Black kingside castling should not be legal"
@@ -275,7 +275,7 @@ def test_castling_rules(fen: str, can_castle: bool):
 
     white_kingside_castle = board.get_move_from_uci("e1g1")
     movegen = MoveGenerator(board)
-    legal_moves = movegen.generate_legal_moves()
+    legal_moves = list(movegen.generate_legal_moves())
 
     expected = can_castle
     actual = white_kingside_castle in legal_moves
@@ -302,8 +302,7 @@ def test_castling_rights_after_rook_move():
     board.make_move(rook_move)
 
     # Black to move (make a random legal move)
-    print(f"{movegen.generate_legal_moves()=}")
-    board.make_move(random_choice(movegen.generate_legal_moves()))
+    board.make_move(random_choice(list(movegen.generate_legal_moves())))
 
     # White
     rook_move_back = board.get_move_from_uci("h2h1")

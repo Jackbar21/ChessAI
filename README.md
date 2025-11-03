@@ -90,7 +90,7 @@ print(board)
 
 # Generate legal moves
 movegen = MoveGenerator(board)
-legal_moves = movegen.generate_legal_moves()
+legal_moves = list(movegen.generate_legal_moves())
 print(f"Legal moves: {[move.to_uci() for move in legal_moves]}")
 
 # Let AI find the best move

@@ -14,7 +14,7 @@ class RandomAgent(BaseAgent):
         Returns:
             A random legal move, or None if no legal moves (checkmate/stalemate)
         """
-        legal_moves = self.move_generator.generate_legal_moves()
+        legal_moves = list(self.move_generator.generate_legal_moves())
 
         if not legal_moves:
             return None  # No legal moves (checkmate or stalemate)
