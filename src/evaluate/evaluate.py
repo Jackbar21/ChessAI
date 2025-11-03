@@ -13,7 +13,7 @@ EVALUATION_FUNCTIONS_TO_WEIGHTS = {
     material: 10,
     pst: 10,
     pawn_structure: 10,
-    mobility: 1,  # Lower weight, mobility is less critical than material/PST
+    mobility: 1,  # Lower weight, mobility is less critical than material & piece-square tables
 }
 
 
