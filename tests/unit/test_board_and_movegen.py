@@ -1,5 +1,5 @@
 import pytest
-from src import Board, MoveGenerator, Color, PieceType
+from src import Board, MoveGenerator, Color, PieceType, RandomAgent
 from random import choice as random_choice
 
 
@@ -314,3 +314,35 @@ def test_castling_rights_after_rook_move():
     assert board.get_move_from_uci("e1g1") not in movegen.generate_legal_moves()
     _, _, castling_rights, _, _, _ = board.to_fen().split(" ")
     assert castling_rights == "-", f"Expected no castling rights, got {castling_rights}"
+
+
+@pytest.mark.parametrize("num_moves", [100])
+def test_fen_history(num_moves):
+    """
+    Test FEN history tracking by having a RandomAgent play a few moves & unmaking them.
+    """
+    board = Board()
+    board.setup_initial_position()
+    agent = RandomAgent(board)
+
+    move_count = 0
+    for _ in range(num_moves):
+        move = agent.find_best_move(0)
+        if move is None:
+            break  # No legal moves, game over
+        board.make_move(move)
+        move_count += 1
+
+    for _ in range(move_count):
+        board.unmake_move()
+
+    # Initial position FEN
+    initial_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+    assert (
+        board.fen_history[initial_fen] == 1
+    ), "FEN history should track initial position once"
+
+    del board.fen_history[initial_fen]
+    assert (
+        max(board.fen_history.values(), default=0) == 0
+    ), "FEN history should be empty after deletions"
