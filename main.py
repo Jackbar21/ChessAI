@@ -4,7 +4,8 @@ Chess AI Engine - Main Entry Point
 This file demonstrates the basic functionality of the chess engine.
 """
 
-from src import Board, Color, PieceType, evaluate
+from src import Board
+from src.evaluate.evaluate import evaluate
 
 
 def main():
