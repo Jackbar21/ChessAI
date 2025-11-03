@@ -31,6 +31,9 @@ class Board:
         # Keep track of pieces for easy iteration
         self.white_pieces: set[Tuple[int, int, Piece]] = set()  # (rank, file, piece)
         self.black_pieces: set[Tuple[int, int, Piece]] = set()  # (rank, file, piece)
+        self.major_minor_count = (
+            0  # Major/minor piece count (excluding kings and pawns)
+        )
 
         # Game state
         self.turn = Color.WHITE
@@ -80,6 +83,8 @@ class Board:
             )
             # Using set remove instead of discard to catch errors
             piece_set.remove((rank, file, old_piece))
+            if old_piece.piece_type not in (PieceType.KING, PieceType.PAWN):
+                self.major_minor_count -= 1
 
         # Set the new piece
         self.board[rank][file] = piece
@@ -92,6 +97,8 @@ class Board:
             else:
                 assert (rank, file, piece) not in self.black_pieces
                 self.black_pieces.add((rank, file, piece))
+            if piece.piece_type not in (PieceType.KING, PieceType.PAWN):
+                self.major_minor_count += 1
 
     def square_to_notation(self, rank: int, file: int) -> str:
         """Convert rank/file to algebraic notation (e.g., 0,0 -> 'a1')."""
@@ -352,6 +359,7 @@ class Board:
             return GameStatus.DRAW
 
         from src.movegen import MoveGenerator
+
         move_gen = MoveGenerator(self)
 
         # No legal moves (checkmate or stalemate)
