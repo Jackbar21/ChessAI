@@ -2,7 +2,7 @@
 Piece representation for the chess engine.
 """
 
-from src.constants import Color, PieceType
+from src.core.constants import Color, PieceType
 
 
 class Piece:

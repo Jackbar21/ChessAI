@@ -8,11 +8,11 @@ This package contains the core chess engine components:
 - move: Move representation
 """
 
-from src.constants import Color, PieceType, GameStatus
-from src.piece import Piece
-from src.board import Board
-from src.move import Move
-from src.movegen import MoveGenerator
+from src.core.constants import Color, PieceType, GameStatus
+from src.core.piece import Piece
+from src.core.board import Board
+from src.core.move import Move
+from src.core.movegen import MoveGenerator
 from src.agents.base import BaseAgent
 from src.agents.random import RandomAgent
 from src.agents.minimax import MinimaxAgent

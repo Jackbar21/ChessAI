@@ -3,9 +3,9 @@ Board representation and game state management.
 """
 
 from typing import List, Optional, Tuple, Dict, Any
-from src.constants import Color, PieceType, GameStatus
-from src.piece import Piece
-from src.move import Move
+from src.core.constants import Color, PieceType, GameStatus
+from src.core.piece import Piece
+from src.core.move import Move
 from collections import defaultdict
 
 
@@ -358,7 +358,7 @@ class Board:
         if self.is_technical_draw():
             return GameStatus.DRAW
 
-        from src.movegen import MoveGenerator
+        from src.core.movegen import MoveGenerator
 
         move_gen = MoveGenerator(self)
 

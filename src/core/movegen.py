@@ -6,9 +6,9 @@ including special moves like castling, en passant, and pawn promotion.
 """
 
 from typing import List, Tuple
-from src.constants import Color, PieceType
-from src.move import Move
-from src.board import Board
+from src.core.constants import Color, PieceType
+from src.core.move import Move
+from src.core.board import Board
 
 
 class MoveGenerator:
