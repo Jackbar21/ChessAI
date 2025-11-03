@@ -81,19 +81,21 @@ ChessAI/
 ### Basic Usage
 
 ```python
-from src import Board, MoveGenerator, SearchEngine
+from src import Board, MoveGenerator, MinimaxAgent
 
 # Create a new game
 board = Board()
 board.setup_initial_position()
+print(board)
 
 # Generate legal moves
 movegen = MoveGenerator(board)
 legal_moves = movegen.generate_legal_moves()
+print(f"Legal moves: {[move.to_uci() for move in legal_moves]}")
 
 # Let AI find the best move
-search = SearchEngine(board)
-best_move = search.find_best_move(depth=4)
+agent = MinimaxAgent(board)
+best_move = agent.find_best_move(depth=2)
 
 # Make the move
 if best_move:
