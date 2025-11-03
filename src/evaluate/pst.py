@@ -1,5 +1,5 @@
 from src import Board, Color, PieceType
-from utils import is_endgame
+from .utils import is_endgame
 
 # Pawns
 PAWN_TABLE_WHITE = [
