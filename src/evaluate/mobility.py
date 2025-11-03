@@ -1,13 +1,12 @@
 # src/evaluate/mobility.py
 from src import Board, Color, MoveGenerator
 
+MOBILITY_WEIGHT = 5  # ~3-7 centipawns is common
+
 
 def evaluate(board: Board) -> int:
     """
     Evaluate mobility (number of legal moves difference between White and Black).
-
-    Returns:
-        Positive if White has more mobility, negative if Black does.
     """
     movegen = MoveGenerator(board)
     moves = movegen.generate_legal_moves()
@@ -20,6 +19,5 @@ def evaluate(board: Board) -> int:
         else:
             black_moves.append(move)
 
-    weight = 5  # ~3-7 centipawns is typical weight per move
-    score = (len(white_moves) - len(black_moves)) * weight
+    score = (len(white_moves) - len(black_moves)) * MOBILITY_WEIGHT
     return score
