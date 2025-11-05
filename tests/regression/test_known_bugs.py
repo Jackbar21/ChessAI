@@ -2,7 +2,7 @@
 Regression tests to ensure that previously identified bugs do not reoccur.
 """
 
-from src import Board, MoveGenerator
+from src import Board, MoveGenerator, MinimaxAgent
 from src.evaluate.evaluate import evaluate
 
 
@@ -81,7 +81,6 @@ def test_castling_priority():
     assert castling_move in legal_moves, "Castling move should be legal"
     assert king_e2_move in legal_moves, "King to e2 move should be legal"
 
-    # assert False
     cur_eval = evaluate(board)
 
     # Make the castling move and evaluate
@@ -98,3 +97,85 @@ def test_castling_priority():
     assert (
         eval_after_castling > eval_after_king_e2
     ), "Castling should yield a better evaluation than king to e2"
+
+
+def test_avoid_threefold_repetition_in_winning_position():
+    """
+    Regression test for a historical bug where the engine would
+    choose moves that lead to threefold repetition even in winning positions.
+    This test sets up a position where the engine is winning and ensures
+    it does not choose a move that leads to repetition.
+    """
+    moves = "d2d4 g8f6 c1f4 b8c6 e2e3 d7d5 g1f3 c8f5 f1b5 a7a6 b5a4 e7e6 c2c3 f8d6 f4g3 d6g3 h2g3 b7b5 a4c2 f5c2 d1c2 f6e4 b1d2 e4d2 c2d2 d8d6 d2d3 h7h6 e3e4 e8g8 e4e5 d6e7 e1c1 g8h8 f3h4 e7g5 f2f4 g5g4 d1f1 b5b4 f4f5 g4g5 c1b1 b4c3 b2c3 a8b8 b1c2 a6a5 f5e6 f7e6 f1f8 b8f8 h1f1 f8f1 d3f1 g5g3 f1f8 h8h7 h4f3 g3g2 f3d2 g2g6 c2d1 g6d3 f8f3 d3f3 d2f3 h7g6 d1e2 g6f5 e2e3 a5a4 f3d2 h6h5 c3c4 d5c4 d2c4 h5h4 c4d2 h4h3 d2f3 a4a3 f3h2 c6b4 h2f1 b4a2 f1d2 h3h2 d2e4 h2h1q e4g3 f5g4 g3h1 a2c3 h1f2 g4f5 f2d3 a3a2 d3c1 a2a1q c1b3 a1e1 e3d3 c3e4 b3c5 e1c3 d3e2 e4c5 d4c5 f5e5 c5c6 g7g5 e2f2 g5g4 f2g2 c3f3 g2g1 e5d4 g1h2 e6e5 h2g1 d4d3 g1h2 d3d4 h2g1 d4d3 g1h2"
+    board = Board()
+    board.setup_initial_position()
+
+    for move_str in moves.split():
+        move = board.get_move_from_uci(move_str)
+        board.make_move(move)
+
+    # Setup agent that was used in the game
+    agent = MinimaxAgent(board)
+    depth = 2
+
+    movegen = MoveGenerator(board)
+    legal_moves = movegen.generate_legal_moves()
+
+    assert (
+        max(board.fen_history.values(), default=0) < 3
+    ), "Position should not already be in repetition"
+
+    repetition_move = board.get_move_from_uci("d3d4")  # Move leading to repetition
+    assert repetition_move in legal_moves, "Repetition-inducing move should be legal"
+
+    # Make repetition move, ensure it leads to threefold repetition
+    board.make_move(repetition_move)
+    assert (
+        board.fen_history[board.position_fen()] >= 3
+    ), "Making the repetition move should lead to threefold repetition"
+    assert board.is_game_over(), "Game should be over due to threefold repetition"
+    assert evaluate(board) == 0, "Game should be a draw due to threefold repetition"
+    board.unmake_move()
+
+    # Now let the engine choose a move (should not be the repetition move, since it's winning)
+    best_move = agent.find_best_move(depth)
+    assert best_move in legal_moves, "Best move should be legal"
+    assert (
+        best_move != repetition_move
+    ), "Engine should avoid moves leading to threefold repetition in winning positions"
+    board.make_move(best_move)
+    assert (
+        board.fen_history[board.position_fen()] < 3
+    ), "Engine's move should not lead to threefold repetition"
+    assert not board.is_game_over(), "Game should not be over after engine's move"
+    assert (
+        evaluate(board) < 0
+    ), "Engine (playing black) should maintain winning position after its move"
+
+
+def test_legal_moves_available():
+    """
+    Regression test where MinimaxAgent with depth=2 returned None for "no legal
+    moves available" in a non-terminal position.
+    """
+    moves = "e2e4 g8f6 g1f3 f6e4 f1c4 d7d5 c4b3 b8c6 d2d3 e4c5 e1g1 e7e5 c1g5 f8e7 g5e7 e8e7 f1e1 c5b3 a2b3 c8g4 h2h3 g4h5 b1c3 e7f8 d1e2 d8d6 c3b5 d6e7 e2e3 h5f3 e3f3 d5d4 e1e4 a7a6 b5a3 e7e6 a1e1 a8a7 a3c4 h8g8 c4e5 c6e5 e4e5 e6c6 e5e7 f7f6 f3c6 b7c6 e7d7 c6c5 e1e7 f6f5 e7f7 f8e8 f7g7 g8g7 d7g7 h7h6 g7h7 f5f4 h7h6 e8e7 h6h4 e7e6 h4f4 e6e5 f4e4 e5d5 g2g4 a7b7 f2f4 a6a5 g4g5 a5a4 b3a4 b7b2 e4e5 d5d6 e5e2 b2a2 g5g6 a2a1 g1f2 a1a4 g6g7 a4a8 f2f3 a8g8 e2g2 d6d5 h3h4 d5e6 f3e4 e6f6 e4d5 g8g7 g2g7 f6g7 d5c5 g7f6 c5d4 f6f5 d4c5 f5f4 c5c6 f4g3 c6c7 g3h4 d3d4 h4g3 d4d5 g3f4 d5d6 f4e4 d6d7 e4d5 d7d8q d5e5 d8d3 e5e6 c7b8 e6e5 c2c4 e5f4 c4c5 f4e5 c5c6 e5f4 c6c7 f4e5 c7c8q e5f6 c8f5 f6g7 d3d7"
+    board = Board()
+    board.setup_initial_position()
+
+    for move_str in moves.split():
+        move = board.get_move_from_uci(move_str)
+        board.make_move(move)
+
+    # Setup agent that was used in the game
+    agent = MinimaxAgent(board)
+    depth = 2
+
+    assert not board.is_game_over(), "The position should not be terminal"
+
+    movegen = MoveGenerator(board)
+    legal_moves = movegen.generate_legal_moves()
+    assert legal_moves, "There should be legal moves available in this position"
+
+    best_move = agent.find_best_move(depth)
+    assert best_move is not None, "Best move should not be None"
+    assert best_move in legal_moves, "Best move should be among legal moves"

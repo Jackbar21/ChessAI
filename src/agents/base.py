@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 from src import Board, Move, MoveGenerator
 from src.evaluate.evaluate import evaluate
+from .utils import evaluate_move
 
 
 class BaseAgent(ABC):
@@ -36,3 +37,14 @@ class BaseAgent(ABC):
         """
         # Default implementation, can be overridden by subclasses
         return evaluate(self.board)
+
+    def get_legal_moves(self) -> List[Move]:
+        """
+        Get a sorted list of legal moves for the current position.
+
+        Returns:
+            List of legal Move objects, sorted by their evaluation score
+        """
+        legal_moves = self.move_generator.generate_legal_moves()
+        legal_moves.sort(key=evaluate_move, reverse=True)
+        return legal_moves

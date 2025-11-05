@@ -1,6 +1,10 @@
 import threading
 from src import Board, Move, RandomAgent, MinimaxAgent
-from lichess.messages import generate_response, GREETINGS
+from lichess.messages import (
+    generate_chat_response,
+    GREETINGS,
+    generate_game_over_response,
+)
 
 
 class Game(threading.Thread):
@@ -10,8 +14,9 @@ class Game(threading.Thread):
         self.client = client
         self.stream = client.bots.stream_game_state(self.game_id)
         self.current_state = next(self.stream)
-        self.username = client.account.get()["username"]
         self.color = event["color"]
+        self.username = client.account.get()["username"]
+        self.opponent_username = event["opponent"]["username"]
 
         self.board = Board()
         self.board.from_fen(event["fen"])
@@ -24,7 +29,7 @@ class Game(threading.Thread):
         for greeting in GREETINGS:
             self.client.bots.post_message(
                 self.game_id,
-                greeting.replace("{{username}}", event["opponent"]["username"]),
+                greeting.replace("{{username}}", self.opponent_username),
             )
 
         if event["isMyTurn"]:
@@ -44,7 +49,7 @@ class Game(threading.Thread):
             return  # Ignore own messages
 
         text = event["text"]
-        response = generate_response(username, text)  # Default response
+        response = generate_chat_response(username, text)  # Default response
 
         # Check message for difficulty commands, and override response
         # TODO: Add more difficulty levels later, such as "magnus carlsen" mode
@@ -73,6 +78,12 @@ class Game(threading.Thread):
         self.depth = 4
 
     def handle_state_change(self, game_state):
+        status = game_state["status"]
+        if status != "started":
+            winner = game_state["winner"] if "winner" in game_state else None
+            self.handle_game_over(self.game_id, status, winner)
+            return
+
         time = (
             game_state.get("wtime")
             if self.color == "white"
@@ -105,3 +116,23 @@ class Game(threading.Thread):
         move_str = agent_move.to_uci()
         self.board.make_move(agent_move)
         self.client.bots.make_move(self.game_id, move_str)
+
+    def handle_game_over(self, game_id: str, status: str, winner: str | None) -> str:
+        assert status in (
+            "aborted",
+            "mate",
+            "resign",
+            "stalemate",
+            "timeout",
+            "draw",
+        ), f"Unknown game status: {status}"
+
+        outcome = status
+        if status == "mate":
+            outcome = "win" if winner == self.color else "loss"
+        elif status == "stalemate":
+            outcome = "draw"
+
+        response = generate_game_over_response(self.opponent_username, outcome)
+        self.client.bots.post_message(game_id, response)
+        return response

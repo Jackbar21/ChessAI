@@ -1,4 +1,4 @@
-from src import Board, PieceType
+from src import Board
 
 
 def is_endgame(board: Board) -> bool:
