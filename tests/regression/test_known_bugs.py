@@ -99,7 +99,7 @@ def test_castling_priority():
     ), "Castling should yield a better evaluation than king to e2"
 
 
-def test_avoid_threefold_repitition_in_winning_position():
+def test_avoid_threefold_repetition_in_winning_position():
     """
     Regression test for a historical bug where the engine would
     choose moves that lead to threefold repetition even in winning positions.
