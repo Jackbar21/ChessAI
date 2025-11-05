@@ -32,8 +32,13 @@ class MinimaxAgent(BaseAgent):
 
         legal_moves = self.get_legal_moves()
 
+        # Base case: no legal moves (checkmate or stalemate)
         if not legal_moves:
-            return None  # No legal moves (checkmate or stalemate)
+            return None
+
+        # Base case: technical draw
+        if self.board.is_technical_draw():
+            return None
 
         # Maximize if white, minimize if black
         is_maximizing = self.board.turn == Color.WHITE
@@ -86,11 +91,14 @@ class MinimaxAgent(BaseAgent):
             return self._quiescence_search(alpha, beta, is_maximizing)
 
         # Base case: check for game over
+        # 1. Technical draw
+        if self.board.is_technical_draw():
+            return 0
+        # 2. No legal moves
         legal_moves = self.get_legal_moves()
         if not legal_moves:
             if self.board.is_in_check(self.board.turn):
-                # Checkmate - very bad for current player
-                # Return extreme value based on whose turn it is
+                # Checkmate (-inf for black win, +inf for white win)
                 return float("-inf") if is_maximizing else float("inf")
             else:
                 # Stalemate
@@ -145,6 +153,20 @@ class MinimaxAgent(BaseAgent):
 
         if max_depth <= 0:
             return cur_eval
+
+        # Base case: technical draw
+        if self.board.is_technical_draw():
+            return 0
+
+        # Base case: no legal moves (checkmate or stalemate)
+        legal_moves = self.get_legal_moves()
+        if not legal_moves:
+            if self.board.is_in_check(self.board.turn):
+                # Checkmate (-inf for black win, +inf for white win)
+                return float("-inf") if is_maximizing else float("inf")
+            else:
+                # Stalemate
+                return 0
 
         if is_maximizing:
             if cur_eval >= beta:
