@@ -50,7 +50,7 @@ class MinimaxAgent(BaseAgent):
                 value = self._minimax(depth - 1, alpha, beta, False)
                 self.board.unmake_move()
 
-                if value > best_value:
+                if value >= best_value:
                     best_value = value
                     best_move = move
 
@@ -62,7 +62,7 @@ class MinimaxAgent(BaseAgent):
                 value = self._minimax(depth - 1, alpha, beta, True)
                 self.board.unmake_move()
 
-                if value < best_value:
+                if value <= best_value:
                     best_value = value
                     best_move = move
 
