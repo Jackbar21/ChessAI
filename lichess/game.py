@@ -1,5 +1,5 @@
 import threading
-from src import Board, Move, RandomAgent, MinimaxAgent, GameStatus
+from src import Board, Move, RandomAgent, MinimaxAgent
 from lichess.messages import (
     generate_chat_response,
     GREETINGS,
