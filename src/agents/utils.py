@@ -1,4 +1,4 @@
-from src import Board, Move
+from src import Move
 
 
 def evaluate_move(move: Move) -> int:
