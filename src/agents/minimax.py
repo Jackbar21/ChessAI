@@ -36,6 +36,8 @@ class MinimaxAgent(BaseAgent):
         if not legal_moves:
             return None
 
+        best_move = legal_moves[0]
+
         # Base case: technical draw
         if self.board.is_technical_draw():
             return None
@@ -50,7 +52,7 @@ class MinimaxAgent(BaseAgent):
                 value = self._minimax(depth - 1, alpha, beta, False)
                 self.board.unmake_move()
 
-                if value >= best_value:
+                if value > best_value:
                     best_value = value
                     best_move = move
 
@@ -62,7 +64,7 @@ class MinimaxAgent(BaseAgent):
                 value = self._minimax(depth - 1, alpha, beta, True)
                 self.board.unmake_move()
 
-                if value <= best_value:
+                if value < best_value:
                     best_value = value
                     best_move = move
 
