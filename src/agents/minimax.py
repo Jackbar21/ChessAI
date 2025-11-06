@@ -16,12 +16,12 @@ class MinimaxAgent(BaseAgent):
     def __init__(self, board: Board):
         super().__init__(board)
 
-    def find_best_move(self, depth: int) -> Optional[Move]:
+    def find_best_move(self, max_depth: int) -> Optional[Move]:
         """
         Find the best move for the current position.
 
         Args:
-            depth: The search depth
+            max_depth: The maximum search depth
 
         Returns:
             The best move, or None if no legal moves (checkmate/stalemate)
@@ -49,7 +49,7 @@ class MinimaxAgent(BaseAgent):
             best_value = float("-inf")
             for move in legal_moves:
                 self.board.make_move(move)
-                value = self._minimax(depth - 1, alpha, beta, False)
+                value = self._minimax(max_depth - 1, alpha, beta, False)
                 self.board.unmake_move()
 
                 if value > best_value:
@@ -61,7 +61,7 @@ class MinimaxAgent(BaseAgent):
             best_value = float("inf")
             for move in legal_moves:
                 self.board.make_move(move)
-                value = self._minimax(depth - 1, alpha, beta, True)
+                value = self._minimax(max_depth - 1, alpha, beta, True)
                 self.board.unmake_move()
 
                 if value < best_value:
@@ -73,13 +73,13 @@ class MinimaxAgent(BaseAgent):
         return best_move
 
     def _minimax(
-        self, depth: int, alpha: float, beta: float, is_maximizing: bool
+        self, max_depth: int, alpha: float, beta: float, is_maximizing: bool
     ) -> float:
         """
         Minimax algorithm with alpha-beta pruning.
 
         Args:
-            depth: Remaining search depth
+            max_depth: Remaining search maximum depth
             alpha: Alpha value for pruning
             beta: Beta value for pruning
             is_maximizing: True if maximizing player, False if minimizing
@@ -88,8 +88,8 @@ class MinimaxAgent(BaseAgent):
             The evaluation score for this position
         """
 
-        # Base case: reached depth limit
-        if depth <= 0:
+        # Base case: reached max_depth limit
+        if max_depth <= 0:
             return self._quiescence_search(alpha, beta, is_maximizing)
 
         # Base case: check for game over
@@ -110,7 +110,7 @@ class MinimaxAgent(BaseAgent):
             max_eval = float("-inf")
             for move in legal_moves:
                 self.board.make_move(move)
-                eval_score = self._minimax(depth - 1, alpha, beta, False)
+                eval_score = self._minimax(max_depth - 1, alpha, beta, False)
                 self.board.unmake_move()
 
                 max_eval = max(max_eval, eval_score)
@@ -124,7 +124,7 @@ class MinimaxAgent(BaseAgent):
             min_eval = float("inf")
             for move in legal_moves:
                 self.board.make_move(move)
-                eval_score = self._minimax(depth - 1, alpha, beta, True)
+                eval_score = self._minimax(max_depth - 1, alpha, beta, True)
                 self.board.unmake_move()
 
                 min_eval = min(min_eval, eval_score)
@@ -146,7 +146,7 @@ class MinimaxAgent(BaseAgent):
             alpha: Alpha value for pruning
             beta: Beta value for pruning
             is_maximizing: True if maximizing player
-            max_depth: Maximum quiescence depth
+            max_depth: Maximum quiescence search depth
 
         Returns:
             The evaluation score

@@ -39,9 +39,9 @@ def test_random_agent_illegal_move_regression():
     assert illegal_move not in legal_moves, f"Move {illegal_move} should be illegal"
 
 
-def test_minimax_agent_depth2_regression():
+def test_minimax_agent_max_depth2_regression():
     """
-    Regression test for a historical bug where MinimaxAgent at depth=2
+    Regression test for a historical bug where MinimaxAgent at max_depth=2
     crashed due to castling bug. Program thought rook was still on h1
     after white castled kingside. So when trying to move f1 rook to e1,
     the program crashed.
@@ -64,7 +64,7 @@ def test_minimax_agent_depth2_regression():
 
 def test_castling_priority():
     """
-    This is a game that I was playing against MinimaxAgent with depth=2 using alpha-beta & quiescence search.
+    This is a game that I was playing against MinimaxAgent with max_depth=2 using alpha-beta & quiescence search.
     At this point of the game, the agent decided to play Ke2 instead of another move like castling. The
     PST function should reward castling more than moving the king to e2.
     """
@@ -116,7 +116,7 @@ def test_avoid_threefold_repetition_in_winning_position():
 
     # Setup agent that was used in the game
     agent = MinimaxAgent(board)
-    depth = 2
+    max_depth = 2
 
     movegen = MoveGenerator(board)
     legal_moves = movegen.generate_legal_moves()
@@ -138,7 +138,7 @@ def test_avoid_threefold_repetition_in_winning_position():
     board.unmake_move()
 
     # Now let the engine choose a move (should not be the repetition move, since it's winning)
-    best_move = agent.find_best_move(depth)
+    best_move = agent.find_best_move(max_depth)
     assert best_move in legal_moves, "Best move should be legal"
     assert (
         best_move != repetition_move
@@ -155,7 +155,7 @@ def test_avoid_threefold_repetition_in_winning_position():
 
 def test_legal_moves_available():
     """
-    Regression test where MinimaxAgent with depth=2 returned None for "no legal
+    Regression test where MinimaxAgent with max_depth=2 returned None for "no legal
     moves available" in a non-terminal position.
     """
     moves = "e2e4 g8f6 g1f3 f6e4 f1c4 d7d5 c4b3 b8c6 d2d3 e4c5 e1g1 e7e5 c1g5 f8e7 g5e7 e8e7 f1e1 c5b3 a2b3 c8g4 h2h3 g4h5 b1c3 e7f8 d1e2 d8d6 c3b5 d6e7 e2e3 h5f3 e3f3 d5d4 e1e4 a7a6 b5a3 e7e6 a1e1 a8a7 a3c4 h8g8 c4e5 c6e5 e4e5 e6c6 e5e7 f7f6 f3c6 b7c6 e7d7 c6c5 e1e7 f6f5 e7f7 f8e8 f7g7 g8g7 d7g7 h7h6 g7h7 f5f4 h7h6 e8e7 h6h4 e7e6 h4f4 e6e5 f4e4 e5d5 g2g4 a7b7 f2f4 a6a5 g4g5 a5a4 b3a4 b7b2 e4e5 d5d6 e5e2 b2a2 g5g6 a2a1 g1f2 a1a4 g6g7 a4a8 f2f3 a8g8 e2g2 d6d5 h3h4 d5e6 f3e4 e6f6 e4d5 g8g7 g2g7 f6g7 d5c5 g7f6 c5d4 f6f5 d4c5 f5f4 c5c6 f4g3 c6c7 g3h4 d3d4 h4g3 d4d5 g3f4 d5d6 f4e4 d6d7 e4d5 d7d8q d5e5 d8d3 e5e6 c7b8 e6e5 c2c4 e5f4 c4c5 f4e5 c5c6 e5f4 c6c7 f4e5 c7c8q e5f6 c8f5 f6g7 d3d7"
@@ -168,7 +168,7 @@ def test_legal_moves_available():
 
     # Setup agent that was used in the game
     agent = MinimaxAgent(board)
-    depth = 2
+    max_depth = 2
 
     assert not board.is_game_over(), "The position should not be terminal"
 
@@ -176,6 +176,6 @@ def test_legal_moves_available():
     legal_moves = movegen.generate_legal_moves()
     assert legal_moves, "There should be legal moves available in this position"
 
-    best_move = agent.find_best_move(depth)
+    best_move = agent.find_best_move(max_depth)
     assert best_move is not None, "Best move should not be None"
     assert best_move in legal_moves, "Best move should be among legal moves"

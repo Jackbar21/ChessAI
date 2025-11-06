@@ -14,12 +14,12 @@ class NegamaxAgent(BaseAgent):
     Negamax is just a more elegant implementation of minimax.
     """
 
-    def find_best_move(self, depth: int) -> Optional[Move]:
+    def find_best_move(self, max_depth: int) -> Optional[Move]:
         """
         Find the best move for the current position.
 
         Args:
-            depth: The search depth
+            max_depth: The search maximum depth
 
         Returns:
             The best move, or None if no legal moves (checkmate/stalemate)

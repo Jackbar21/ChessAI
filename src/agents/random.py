@@ -7,7 +7,7 @@ class RandomAgent(BaseAgent):
     Chess agent that selects moves randomly.
     """
 
-    def find_best_move(self, depth: int) -> Optional[Move]:
+    def find_best_move(self, max_depth: int) -> Optional[Move]:
         """
         Find a random legal move for the current position.
 

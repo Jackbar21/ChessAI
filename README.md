@@ -95,7 +95,7 @@ print(f"Legal moves: {[move.to_uci() for move in legal_moves]}")
 
 # Let AI find the best move
 agent = MinimaxAgent(board)
-best_move = agent.find_best_move(depth=2)
+best_move = agent.find_best_move(max_depth=2)
 
 # Make the move
 if best_move:

@@ -70,7 +70,7 @@ Reference: [chessprogramming.org/Evaluation](https://www.chessprogramming.org/Ev
 When the engine **beats me for the first time**, I’ll record:
 
 - The **evaluation parameters** used
-- The **search depth and pruning settings**
+- The **search max_depth and pruning settings**
 - The **exact game** it won
 
 ---

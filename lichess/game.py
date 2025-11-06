@@ -23,7 +23,7 @@ class Game(threading.Thread):
 
         # Default to medium difficulty
         self.agent = MinimaxAgent(self.board)
-        self.depth = 2
+        self.max_depth = 2
 
         # Tell user they can change the bot agent at any time via chat
         for greeting in GREETINGS:
@@ -71,11 +71,11 @@ class Game(threading.Thread):
 
     def set_medium_mode(self):
         self.agent = MinimaxAgent(self.board)
-        self.depth = 2
+        self.max_depth = 2
 
     def set_hard_mode(self):
         self.agent = MinimaxAgent(self.board)
-        self.depth = 4
+        self.max_depth = 4
 
     def handle_state_change(self, game_state):
         status = game_state["status"]
@@ -111,7 +111,7 @@ class Game(threading.Thread):
         self.make_move()
 
     def make_move(self):
-        agent_move = self.agent.find_best_move(self.depth)
+        agent_move = self.agent.find_best_move(self.max_depth)
         assert agent_move is not None, "No legal moves available"
         move_str = agent_move.to_uci()
         self.board.make_move(agent_move)

@@ -15,7 +15,7 @@ def test_agent_vs_self(MoveAgent: type[BaseAgent]):
 
     move_count = 0
     while not board.is_game_over():
-        move = agent.find_best_move(depth=1)
+        move = agent.find_best_move(max_depth=1)
         board.make_move(move)
         move_count += 1
 

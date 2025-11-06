@@ -14,14 +14,14 @@ class NeuralNetAgent(BaseAgent):
     This is simply a stub for now, as a reminder to implement later.
     """
 
-    def find_best_move(self, depth: int) -> Optional[Move]:
+    def find_best_move(self, max_depth: int) -> Optional[Move]:
         """
         Find the best move for the current position.
 
         Args:
-            depth: The search depth
+            max_depth: The search maximum depth
 
         Returns:
             The best move, or None if no legal moves (checkmate/stalemate)
         """
-        raise NotImplementedError("NegamaxAgent is not yet implemented")
+        raise NotImplementedError("NeuralNetAgent is not yet implemented")
